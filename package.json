@@ -1,0 +1,13 @@
+{
+  "name": "fitness-journal",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "app",
+    "api"
+  ],
+  "scripts": {
+    "dev:app": "npm run dev --workspace=app",
+    "dev:api": "npm run dev --workspace=api"
+  }
+}
