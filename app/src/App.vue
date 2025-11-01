@@ -1,7 +1,7 @@
 <script setup></script>
 
 <template>
-  <h1>Fitness Journal App</h1>
+  <router-view></router-view>
 </template>
 
 <style scoped></style>
