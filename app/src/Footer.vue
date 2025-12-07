@@ -13,7 +13,7 @@ import { RouterLink } from 'vue-router'
           <RouterLink to="/journal">Journal</RouterLink>
         </li>
         <li>
-          <RouterLink to="/progress">Stats</RouterLink>
+          <RouterLink to="/stats">Stats</RouterLink>
         </li>
         <li>
           <RouterLink to="/social">Social</RouterLink>
