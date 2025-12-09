@@ -1,5 +1,6 @@
 <script setup>
 import AppFooter from './Footer.vue'
+import NavBar from './NavBar.vue'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 
@@ -9,6 +10,7 @@ const showFooter = computed(() => route.path !== '/login')
 
 <template>
   <div class="app">
+    <NavBar />
     <router-view></router-view>
     <AppFooter v-if="showFooter" />
   </div>
