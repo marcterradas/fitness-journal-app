@@ -10,11 +10,11 @@ const isLogginPage = computed(() => route.path === '/login')
 
 <template>
   <div class="app">
-    <NavBar v-if="!isLogginPage" />
     <main class="content">
+      <NavBar v-if="!isLogginPage" />
       <router-view></router-view>
+      <AppFooter v-if="!isLogginPage" />
     </main>
-    <AppFooter v-if="!isLogginPage" />
   </div>
 </template>
 
@@ -26,6 +26,7 @@ const isLogginPage = computed(() => route.path === '/login')
     justify-content: center;
     width: 100%;
   }
+
   .content {
     padding: 1rem;
     width: 100%;

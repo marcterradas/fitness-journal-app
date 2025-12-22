@@ -16,6 +16,8 @@ f<template>
   align-items: center;
   justify-content: flex-end;
   border-bottom: 1px solid var(--pico-muted-border-color);
+  width: 100%;
+  padding: 0 1rem;
 }
 
 .navbar__brand {
