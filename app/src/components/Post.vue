@@ -17,13 +17,13 @@ const content = "Just finished a great workout! 💪 Hit a new PR on the bench p
 
     <div class="post-footer">
       <button class="action-btn">
-        ❤️ Like
+        <img src="/heart.svg" alt="Like" width="16" height="16" />
       </button>
       <button class="action-btn">
-        💬 Comment
+        <img src="/message.svg" alt="Comment" width="16" height="16" />
       </button>
       <button class="action-btn">
-        ↗️ Share
+        <img src="/send.svg" alt="Share" width="16" height="16" />
       </button>
     </div>
   </div>
@@ -68,7 +68,7 @@ const content = "Just finished a great workout! 💪 Hit a new PR on the bench p
 
 .post-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   border-top: 1px solid #333;
   padding-top: 0.75rem;
 }
