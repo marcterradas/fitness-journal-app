@@ -28,8 +28,11 @@ const isLogginPage = computed(() => route.path === '/login')
   }
 
   .content {
+    display: flex;
+    flex-direction: column;
     padding: 1rem;
     width: 100%;
     max-width: 1440px;
+    gap: 1rem;
   }
 </style>

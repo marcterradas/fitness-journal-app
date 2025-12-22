@@ -1,11 +1,12 @@
+<script setup>
+  import Post from '@/components/Post.vue';
+</script>
+
 <template>
   <div class="home">
-    home ...
+    <Post />
   </div>
 </template>
-
-<script setup>
-</script>
 
 <style scoped>
 </style>
