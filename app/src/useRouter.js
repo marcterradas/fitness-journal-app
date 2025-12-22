@@ -1,11 +1,11 @@
 import { createWebHistory, createRouter } from 'vue-router'
 
-import HomeView from './HomeView.vue'
-import LoginView from './LoginView.vue'
-import ProfileView from './ProfileView.vue'
-import SocialView from './SocialView.vue'
-import StatsView from './StatsView.vue'
-import JournalView from './JournalView.vue'
+import HomeView from './views/HomeView.vue'
+import LoginView from './views/LoginView.vue'
+import ProfileView from './views/ProfileView.vue'
+import SocialView from './views/SocialView.vue'
+import StatsView from './views/StatsView.vue'
+import JournalView from './views/JournalView.vue'
 
 const routes = [
   { path: '/', component: HomeView },
