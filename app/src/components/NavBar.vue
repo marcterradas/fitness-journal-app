@@ -1,11 +1,11 @@
 f<template>
   <header class="navbar">
       <button class="navbar__icon-button" aria-label="Messages" title="Messages" type="button">
-        <img class="navbar__icon" src="/message.svg" alt="Messages" width="20" height="20" />
+        <img class="navbar__icon" src="/message.svg" alt="Messages" />
       </button>
 
       <button class="navbar__icon-button" aria-label="Notifications" title="Notifications" type="button">
-        <img class="navbar__icon" src="/bell.svg" alt="Notifications" width="20" height="20" />
+        <img class="navbar__icon" src="/bell.svg" alt="Notifications" />
       </button>
   </header>
 </template>
@@ -33,5 +33,7 @@ f<template>
 
 .navbar__icon {
   display: block;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 </style>

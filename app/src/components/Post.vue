@@ -1,29 +1,26 @@
 <script setup>
-const username = "AlexFit";
-const avatarUrl = "https://i.pravatar.cc/150?img=12";
-const content = "Just finished a great workout! 💪 Hit a new PR on the bench press today. Feeling stronger every day. #fitness #gym #motivation";
+// TODO: fetch post data from API.
+const username = "Marc";
+const avatarUrl = "https://i.pravatar.cc?u=placeholder";
+const content = "Just finished a great workout! 💪";
 </script>
 
 <template>
   <div class="post">
-    <div class="post-header">
-      <img :src="avatarUrl" alt="User Avatar" class="avatar" />
-      <span class="username">{{ username }}</span>
+    <div class="post__header">
+      <img :src="avatarUrl" alt="User Avatar" class="post__avatar" />
+      <span class="post__username">{{ username }}</span>
     </div>
-    
-    <div class="post-content">
-      <p>{{ content }}</p>
-    </div>
-
-    <div class="post-footer">
-      <button class="action-btn">
-        <img src="/heart.svg" alt="Like" width="16" height="16" />
+      <p class="post__content">{{ content }}</p>
+    <div class="post__footer">
+      <button class="post__action-btn">
+        <img class="post__action-icon" src="/heart.svg" alt="Like" />
       </button>
-      <button class="action-btn">
-        <img src="/message.svg" alt="Comment" width="16" height="16" />
+      <button class="post__action-btn">
+        <img class="post__action-icon" src="/message.svg" alt="Comment" />
       </button>
-      <button class="action-btn">
-        <img src="/send.svg" alt="Share" width="16" height="16" />
+      <button class="post__action-btn">
+        <img class="post__action-icon" src="/send.svg" alt="Share" />
       </button>
     </div>
   </div>
@@ -31,64 +28,54 @@ const content = "Just finished a great workout! 💪 Hit a new PR on the bench p
 
 <style scoped>
 .post {
-  background-color: #1a1a1a;
+  background-color: #222;
   border-radius: 1rem;
   padding: 1rem;
-  margin-bottom: 1rem;
   width: 100%;
-  border: 1px solid #333;
 }
 
-.post-header {
+.post__header {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-.avatar {
-  width: 40px;
-  height: 40px;
+.post__avatar {
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
   object-fit: cover;
   margin-right: 0.75rem;
-  border: 2px solid #42b883;
 }
 
-.username {
+.post__username {
   font-weight: bold;
   color: #fff;
-  font-size: 1rem;
+  font-size: 1.25rem;
 }
 
-.post-content {
+.post__content {
   margin-bottom: 1rem;
-  color: #e0e0e0;
-  line-height: 1.5;
+  color: #fff;
+  font-size: 1.25rem;
 }
 
-.post-footer {
+.post__footer {
   display: flex;
   justify-content: flex-end;
   border-top: 1px solid #333;
-  padding-top: 0.75rem;
+  padding-top: 0.5rem;
+  gap: 0.5rem;
 }
 
-.action-btn {
+.post__action-btn {
   background: none;
   border: none;
-  color: #aaa;
   cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: background-color 0.2s;
 }
 
-.action-btn:hover {
-  background-color: #333;
-  color: #fff;
+.post__action-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 </style>

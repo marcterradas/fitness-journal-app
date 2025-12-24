@@ -5,8 +5,6 @@
 <template>
   <div class="home">
     <Post />
-    <Post />
-    <Post />
   </div>
 </template>
 

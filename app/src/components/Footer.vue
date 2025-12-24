@@ -17,16 +17,6 @@ import { RouterLink } from 'vue-router'
           </RouterLink>
         </li>
         <li class="footer__item">
-          <RouterLink to="/stats" class="footer__link">
-            <img src="/chart.svg" alt="Stats" width="20" height="20" />
-          </RouterLink>
-        </li>
-        <li class="footer__item">
-          <RouterLink to="/social" class="footer__link">
-            <img src="/users.svg" alt="Social" width="20" height="20" />
-          </RouterLink>
-        </li>
-        <li class="footer__item">
           <RouterLink to="/profile" class="footer__link">
             <img src="/user.svg" alt="Profile" width="20" height="20" />
           </RouterLink>
