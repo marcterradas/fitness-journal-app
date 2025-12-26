@@ -1,0 +1,123 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  date: {
+    type: Date,
+    required: true
+  }
+})
+
+const status = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const checkDate = new Date(props.date)
+  checkDate.setHours(0, 0, 0, 0)
+
+  if (checkDate < today) return 'completed'
+  if (checkDate.getTime() === today.getTime()) return 'active'
+  return 'upcoming'
+})
+
+const exercises = ['Pull ups', 'Dips', 'Rows', 'Military Press']
+</script>
+
+<template>
+  <div class="workout-card">
+    <div class="workout-card__status-container">
+      <div v-if="status === 'completed'" class="workout-card__action workout-card__action--completed">
+        <span>✓ Workout Completed</span>
+      </div>
+      <button v-else-if="status === 'active'" class="workout-card__action workout-card__action--start">
+        Start Workout
+      </button>
+      <div v-else class="workout-card__action workout-card__action--upcoming">
+        <span>Upcoming Workout</span>
+      </div>
+    </div>
+    
+    <div class="workout-card__exercises">
+      <h3 class="workout-card__exercises-title">Workout Summary</h3>
+      <ul class="workout-card__exercises-list">
+        <li v-for="exercise in exercises" :key="exercise" class="workout-card__exercises-item">{{ exercise }}</li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.workout-card {
+  background-color: #222;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.workout-card__status-container {
+  display: flex;
+  justify-content: center;
+}
+
+.workout-card__action {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workout-card__action--completed {
+  background-color: #2e7d32;
+}
+
+.workout-card__action--start {
+  background-color: #1976d2;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.workout-card__action--start:hover {
+  background-color: #1565c0;
+}
+
+.workout-card__action--upcoming {
+  background-color: #424242;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.workout-card__exercises-title {
+  margin: 0 0 1rem 0;
+  color: #888;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.workout-card__exercises-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.workout-card__exercises-item {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #333;
+  color: #eee;
+  font-size: 1.1rem;
+}
+
+.workout-card__exercises-item:last-child {
+  border-bottom: none;
+}
+</style>

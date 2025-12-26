@@ -1,18 +1,25 @@
 <script setup>
-import { useDateNavigation } from '@/composables/useDateNavigation'
+import Button from '@/components/Button.vue';
 
-const { formattedDate, previousDay, nextDay } = useDateNavigation()
+defineProps({
+  formattedDate: {
+    type: String,
+    required: true
+  }
+})
+
+defineEmits(['previous', 'next'])
 </script>
 
 <template>
   <div class="day-selector">
-    <button class="nav-button" @click="previousDay" aria-label="Previous day">
+    <Button class="day-selector__button" @click="$emit('previous')" aria-label="Previous day">
       &larr;
-    </button>
-    <span class="current-date">{{ formattedDate }}</span>
-    <button class="nav-button" @click="nextDay" aria-label="Next day">
+    </Button>
+    <span class="day-selector__date">{{ formattedDate }}</span>
+    <Button class="day-selector__button" @click="$emit('next')" aria-label="Next day">
       &rarr;
-    </button>
+    </Button>
   </div>
 </template>
 
@@ -26,19 +33,12 @@ const { formattedDate, previousDay, nextDay } = useDateNavigation()
   width: 100%;
 }
 
-.nav-button {
-  background: none;
-  border: none;
+.day-selector__button {
+  background-color: transparent;
   color: #fff;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.current-date {
+.day-selector__date {
   font-size: 1rem;
 }
 </style>
