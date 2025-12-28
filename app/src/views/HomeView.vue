@@ -1,8 +1,10 @@
 <script setup>
   import Post from '@/components/Post.vue';
+  import SectionTitle from '@/components/SectionTitle.vue';
 </script>
 
 <template>
+  <SectionTitle>Home</SectionTitle>
   <div class="home">
     <Post />
   </div>

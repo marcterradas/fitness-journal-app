@@ -1,4 +1,4 @@
-f<template>
+<template>
   <header class="navbar">
       <button class="navbar__icon-button" aria-label="Messages" title="Messages" type="button">
         <img class="navbar__icon" src="/message.svg" alt="Messages" />

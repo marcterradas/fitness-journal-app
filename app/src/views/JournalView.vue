@@ -1,4 +1,14 @@
+<script setup>
+import DaySelector from '@/components/DaySelector.vue';
+import WorkoutCard from '@/components/WorkoutCard.vue';
+import { useDateNavigation } from '@/composables/useDateNavigation';
+import SectionTitle from '@/components/SectionTitle.vue';
+
+const { currentDate, formattedDate, previousDay, nextDay } = useDateNavigation();
+</script>
+
 <template>
+  <SectionTitle>Journal</SectionTitle>
   <div class="journal">
     <DaySelector 
       :formattedDate="formattedDate"
@@ -8,14 +18,6 @@
     <WorkoutCard :date="currentDate" />
   </div>
 </template>
-
-<script setup>
-import DaySelector from '@/components/DaySelector.vue';
-import WorkoutCard from '@/components/WorkoutCard.vue';
-import { useDateNavigation } from '@/composables/useDateNavigation';
-
-const { currentDate, formattedDate, previousDay, nextDay } = useDateNavigation();
-</script>
 
 <style scoped>
 .journal {

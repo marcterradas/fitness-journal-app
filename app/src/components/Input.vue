@@ -1,15 +1,3 @@
-<template>
-    <div class="input-container">
-        <label v-if="label" :for="id" class="input-label">{{ label }}</label>
-        <input
-            :id="id"
-            :type="type"
-            :placeholder="placeholder"
-            v-model="modelValue"
-            class="input-field"
-        />
-    </div>
-</template>
 <script setup>
 const props = defineProps({
     id: {
@@ -40,6 +28,20 @@ const modelValue = defineModel({
     }
 })
 </script>
+
+<template>
+    <div class="input-container">
+        <label v-if="label" :for="id" class="input-label">{{ label }}</label>
+        <input
+            :id="id"
+            :type="type"
+            :placeholder="placeholder"
+            v-model="modelValue"
+            class="input-field"
+        />
+    </div>
+</template>
+
 <style scoped>
 .input-container {
     display: flex;
