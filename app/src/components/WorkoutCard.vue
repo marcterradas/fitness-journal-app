@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   date: {
@@ -7,6 +8,8 @@ const props = defineProps({
     required: true
   }
 })
+
+  const router = useRouter()
 
 const status = computed(() => {
   const today = new Date()
@@ -20,6 +23,10 @@ const status = computed(() => {
   return 'upcoming'
 })
 
+function goToWorkout() {
+  router.push('/workout')
+}
+
 const exercises = ['Pull ups', 'Dips', 'Rows', 'Military Press']
 </script>
 
@@ -29,7 +36,7 @@ const exercises = ['Pull ups', 'Dips', 'Rows', 'Military Press']
       <div v-if="status === 'completed'" class="workout-card__action workout-card__action--completed">
         <span>✓ Workout Completed</span>
       </div>
-      <button v-else-if="status === 'active'" class="workout-card__action workout-card__action--start">
+      <button v-else-if="status === 'active'" class="workout-card__action workout-card__action--start" @click="goToWorkout">
         Start Workout
       </button>
       <div v-else class="workout-card__action workout-card__action--upcoming">
