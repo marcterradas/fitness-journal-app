@@ -33,15 +33,15 @@ const exercises = ['Pull ups', 'Dips', 'Rows', 'Military Press']
 <template>
   <div class="workout-card">
     <div class="workout-card__status-container">
-      <div v-if="status === 'completed'" class="workout-card__action workout-card__action--completed">
-        <span>✓ Workout Completed</span>
-      </div>
+      <button v-if="status === 'completed'" class="workout-card__action workout-card__action--completed" disabled>
+        <span>Workout Completed</span>
+      </button>
       <button v-else-if="status === 'active'" class="workout-card__action workout-card__action--start" @click="goToWorkout">
         Start Workout
       </button>
-      <div v-else class="workout-card__action workout-card__action--upcoming">
+      <button v-else class="workout-card__action workout-card__action--upcoming" disabled>
         <span>Upcoming Workout</span>
-      </div>
+      </button>
     </div>
     
     <div class="workout-card__exercises">
@@ -90,7 +90,6 @@ const exercises = ['Pull ups', 'Dips', 'Rows', 'Military Press']
 .workout-card__action--start {
   background-color: #1976d2;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 .workout-card__action--start:hover {
