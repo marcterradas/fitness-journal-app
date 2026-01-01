@@ -1,27 +1,35 @@
 <script setup>
-import { RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goToHome() {
+  router.push('/')
+}
+
+function goToJournal() {
+  router.push('/journal')
+}
+
+function goToProfile() {
+  router.push('/profile')
+}
 </script>
 
 <template>
   <footer class="footer">
     <nav class="footer__nav">
-      <ul class="footer__list">
-        <li class="footer__item">
-          <RouterLink to="/" class="footer__link">
+      <div class="footer__list">
+        <button class="footer__item" @click="goToHome">
             <img src="/house.svg" alt="Home" width="20" height="20" />
-          </RouterLink>
-        </li>
-        <li class="footer__item">
-          <RouterLink to="/journal" class="footer__link">
+        </button>
+        <button class="footer__item" @click="goToJournal">
             <img src="/book.svg" alt="Journal" width="20" height="20" />
-          </RouterLink>
-        </li>
-        <li class="footer__item">
-          <RouterLink to="/profile" class="footer__link">
+        </button>
+        <button class="footer__item" @click="goToProfile">
             <img src="/user.svg" alt="Profile" width="20" height="20" />
-          </RouterLink>
-        </li>
-      </ul>
+        </button>
+      </div>
     </nav>
   </footer>
 </template>
@@ -46,7 +54,9 @@ import { RouterLink } from 'vue-router'
 }
 
 .footer__item {
-  list-style: none;
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
 .footer__link {
