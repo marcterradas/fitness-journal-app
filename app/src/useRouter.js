@@ -6,6 +6,7 @@ import ProfileView from './views/ProfileView.vue'
 import JournalView from './views/JournalView.vue'
 import WorkoutView from './views/WorkoutView.vue'
 import MessagesView from './views/MessagesView.vue'
+import SearchView from './views/SearchView.vue'
 
 const routes = [
   { path: '/', component: HomeView },
@@ -14,6 +15,7 @@ const routes = [
   { path: '/journal', component: JournalView },
   { path: '/workout', component: WorkoutView },
   { path: '/messages', component: MessagesView },
+  { path: '/search', component: SearchView },
 ]
 
 export const router = createRouter({

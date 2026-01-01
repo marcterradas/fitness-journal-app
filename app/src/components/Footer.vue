@@ -7,6 +7,10 @@ function goToHome() {
   router.push('/')
 }
 
+function goToSearch() {
+  router.push('/search')
+}
+
 function goToJournal() {
   router.push('/journal')
 }
@@ -22,6 +26,9 @@ function goToProfile() {
       <div class="footer__list">
         <button class="footer__item" @click="goToHome">
             <img src="/house.svg" alt="Home" width="20" height="20" />
+        </button>
+        <button class="footer__item" @click="goToSearch">
+            <img src="/search.svg" alt="Search" width="20" height="20" />
         </button>
         <button class="footer__item" @click="goToJournal">
             <img src="/book.svg" alt="Journal" width="20" height="20" />
