@@ -30,25 +30,25 @@ const modelValue = defineModel({
 </script>
 
 <template>
-    <div class="input-container">
-        <label v-if="label" :for="id" class="input-label">{{ label }}</label>
+    <div class="form-input">
+        <label v-if="label" :for="id" class="form-input__label">{{ label }}</label>
         <input
             :id="id"
             :type="type"
             :placeholder="placeholder"
             v-model="modelValue"
-            class="input-field"
+            class="form-input__field"
         />
     </div>
 </template>
 
 <style scoped>
-.input-container {
+.form-input {
     display: flex;
     flex-direction: column;
 }
 
-.input-field {
+.form-input__field {
     font-size: 1rem;
     padding: 0.5rem 1rem;
 }

@@ -10,7 +10,7 @@ const isLogginPage = computed(() => route.path === '/login')
 
 <template>
   <div class="app">
-    <main class="content">
+    <main class="app__main">
       <NavBar v-if="!isLogginPage" />
       <router-view></router-view>
       <AppFooter v-if="!isLogginPage" />
@@ -27,7 +27,7 @@ const isLogginPage = computed(() => route.path === '/login')
     width: 100%;
   }
 
-  .content {
+  .app__main {
     display: flex;
     flex-direction: column;
     padding: 1rem;
