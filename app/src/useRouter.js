@@ -5,6 +5,7 @@ import LoginView from './views/LoginView.vue'
 import ProfileView from './views/ProfileView.vue'
 import JournalView from './views/JournalView.vue'
 import WorkoutView from './views/WorkoutView.vue'
+import MessagesView from './views/MessagesView.vue'
 
 const routes = [
   { path: '/', component: HomeView },
@@ -12,6 +13,7 @@ const routes = [
   { path: '/profile', component: ProfileView },
   { path: '/journal', component: JournalView },
   { path: '/workout', component: WorkoutView },
+  { path: '/messages', component: MessagesView },
 ]
 
 export const router = createRouter({

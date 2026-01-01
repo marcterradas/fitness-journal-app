@@ -1,6 +1,16 @@
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goToMessages() {
+  router.push('/messages')
+}
+</script>
+
 <template>
   <header class="navbar">
-      <button class="navbar__icon-button" aria-label="Messages" title="Messages" type="button">
+      <button class="navbar__icon-button" aria-label="Messages" title="Messages" type="button" @click="goToMessages">
         <img class="navbar__icon" src="/message.svg" alt="Messages" />
       </button>
 
