@@ -48,6 +48,10 @@ function selectChat(id) {
     scrollToBottom();
 }
 
+function backToList() {
+    activeChatId.value = null;
+}
+
 function sendMessage() {
     if (!newMessage.value.trim() || !activeChatId.value) return;
 
@@ -79,10 +83,10 @@ watch(activeChatId, () => {
 </script>
 
 <template>
-    <div class="messages-view">
-        <SectionTitle>Messages</SectionTitle>
+    <div class="messages-view" :class="{ 'messages-view--mobile-active': activeChatId }">
+        <SectionTitle class="messages-title">Messages</SectionTitle>
         <div class="chat-interface">
-            <div class="chat-list">
+            <div class="chat-list" :class="{ 'chat-list--hidden': activeChatId }">
                 <div 
                     v-for="chat in conversations" 
                     :key="chat.id"
@@ -99,10 +103,13 @@ watch(activeChatId, () => {
             </div>
 
             <!-- Right Pane: Active Conversation -->
-            <div class="chat-window">
+            <div class="chat-window" :class="{ 'chat-window--active': activeChatId }">
                 <div v-if="activeChatId" class="chat-window__content">
                     <!-- Header -->
                     <div class="chat-header">
+                        <button class="back-button" @click="backToList" aria-label="Back to messages">
+                            ←
+                        </button>
                         <h2 class="chat-header__name">
                             {{ conversations.find(c => c.id === activeChatId).name }}
                         </h2>
@@ -219,6 +226,10 @@ watch(activeChatId, () => {
     background-color: #1a1a1a;
 }
 
+.back-button {
+    display: none;
+}
+
 .chat-window__content {
     display: flex;
     flex-direction: column;
@@ -238,6 +249,9 @@ watch(activeChatId, () => {
     padding: 1rem;
     border-bottom: 1px solid #333;
     background-color: #222;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .chat-header__name {
@@ -308,5 +322,40 @@ watch(activeChatId, () => {
 
 .chat-input-wrapper {
     flex-grow: 1;
+}
+
+@media (max-width: 768px) {
+    .messages-view--mobile-active .messages-title {
+        display: none;
+    }
+
+    .chat-list {
+        width: 100%;
+        border-right: none;
+    }
+
+    .chat-list--hidden {
+        display: none;
+    }
+
+    .chat-window {
+        display: none;
+        width: 100%;
+    }
+
+    .chat-window--active {
+        display: flex;
+    }
+
+    .back-button {
+        display: block;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0 0.5rem 0 0;
+        line-height: 1;
+    }
 }
 </style>
