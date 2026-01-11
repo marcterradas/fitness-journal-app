@@ -18,4 +18,11 @@ import UserProfile from '@/components/UserProfile.vue';
 </script>
 
 <style scoped>
+.profile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 1rem;
+}
 </style>
