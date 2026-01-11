@@ -6,6 +6,10 @@ const router = useRouter()
 function goToMessages() {
   router.push('/messages')
 }
+
+function goToNotifications() {
+  router.push('/notifications')
+}
 </script>
 
 <template>
@@ -14,7 +18,7 @@ function goToMessages() {
         <img class="navbar__icon" src="/message.svg" alt="Messages" />
       </button>
 
-      <button class="navbar__icon-button" aria-label="Notifications" title="Notifications" type="button">
+      <button class="navbar__icon-button" aria-label="Notifications" title="Notifications" type="button" @click="goToNotifications">
         <img class="navbar__icon" src="/bell.svg" alt="Notifications" />
       </button>
   </header>
