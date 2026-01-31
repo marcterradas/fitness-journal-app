@@ -10,6 +10,10 @@ function goToMessages() {
 function goToNotifications() {
   router.push('/notifications')
 }
+
+function goToSettings() {
+  router.push('/settings')
+}
 </script>
 
 <template>
@@ -20,6 +24,10 @@ function goToNotifications() {
 
       <button class="navbar__icon-button" aria-label="Notifications" title="Notifications" type="button" @click="goToNotifications">
         <img class="navbar__icon" src="/bell.svg" alt="Notifications" />
+      </button>
+
+      <button class="navbar__icon-button" aria-label="Settings" title="Settings" type="button" @click="goToSettings">
+        <img class="navbar__icon" src="/gear.svg" alt="User Profile" />
       </button>
   </header>
 </template>

@@ -8,6 +8,7 @@ import WorkoutView from './views/WorkoutView.vue'
 import MessagesView from './views/MessagesView.vue'
 import SearchView from './views/SearchView.vue'
 import NotificationView from './views/NotificationView.vue'
+import SettingsView from './views/SettingsView.vue'
 
 const routes = [
   { path: '/', component: HomeView },
@@ -18,6 +19,7 @@ const routes = [
   { path: '/messages', component: MessagesView },
   { path: '/search', component: SearchView },
   { path: '/notifications', component: NotificationView },
+  { path: '/settings', component: SettingsView },
 ]
 
 export const router = createRouter({
