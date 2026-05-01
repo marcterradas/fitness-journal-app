@@ -1,12 +1,14 @@
 <template>
-    <h1 class="section-title">
-        <slot></slot>
-    </h1>
+  <h1 class="section-title">
+    <slot />
+  </h1>
 </template>
 
-<style lang="css" scoped>
+<style scoped>
 .section-title {
-    font-size: 2rem;
-    font-weight: bold;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  color: var(--color-text);
 }
 </style>

@@ -9,12 +9,15 @@ import MessagesView from './views/MessagesView.vue'
 import SearchView from './views/SearchView.vue'
 import NotificationView from './views/NotificationView.vue'
 import SettingsView from './views/SettingsView.vue'
+import TemplatesView from './views/TemplatesView.vue'
 
 const routes = [
   { path: '/', component: HomeView },
+  { path: '/feed', redirect: '/' },
   { path: '/login', component: LoginView },
   { path: '/profile', component: ProfileView },
   { path: '/journal', component: JournalView },
+  { path: '/templates', component: TemplatesView },
   { path: '/workout', component: WorkoutView },
   { path: '/messages', component: MessagesView },
   { path: '/search', component: SearchView },

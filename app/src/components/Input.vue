@@ -1,90 +1,69 @@
 <script setup>
 const props = defineProps({
-    id: {
-        type: String,
-        required: false,
-        default: ''
-    },
-    modelValue: {
-        type: [String, Number],
-        default: ''
-    },
-    type: {
-        type: String,
-        default: 'text'
-    },
-    placeholder: {
-        type: String,
-        default: ''
-    },
-    label: {
-        type: String,
-        default: ''
-    },
+  id: { type: String, default: '' },
+  modelValue: { type: [String, Number], default: '' },
+  type: { type: String, default: 'text' },
+  placeholder: { type: String, default: '' },
+  label: { type: String, default: '' },
 })
 const emits = defineEmits(['update:modelValue'])
 
 const modelValue = defineModel({
-    get() {
-        return props.modelValue
-    },
-    set(value) {
-        emits('update:modelValue', value)
-    }
+  get() { return props.modelValue },
+  set(value) { emits('update:modelValue', value) },
 })
 </script>
-  
+
 <template>
-    <div class="form-input">
-        <label v-if="label" :for="id" class="form-input__label">{{ label }}</label>
-        <input
-            :id="id"
-            :type="type"
-            :placeholder="placeholder"
-            v-model="modelValue"
-            class="form-input__field"
-        />
-    </div>
+  <div class="form-input">
+    <label v-if="label" :for="id" class="form-input__label">{{ label }}</label>
+    <input
+      :id="id"
+      :type="type"
+      :placeholder="placeholder"
+      v-model="modelValue"
+      class="form-input__field"
+    />
+  </div>
 </template>
 
 <style scoped>
 .form-input {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
 }
 
 .form-input__label {
-    color: #bdbdbd;
-    font-size: 0.9rem;
-    margin-bottom: 0.25rem;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
 }
 
 .form-input__field {
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    background-color: #111214; /* dark surface */
-    color: #e9eef8; /* light text */
-    border: 1px solid #2b2b2b;
-    border-radius: 8px;
-    transition: border-color 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
-    caret-color: #90caf9;
+  font-size: var(--fs-md);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  caret-color: var(--color-accent);
+  outline: none;
 }
 
 .form-input__field::placeholder {
-    color: #7a7a7a;
-    opacity: 1;
+  color: var(--color-text-dim);
 }
 
 .form-input__field:focus {
-    outline: none;
-    border-color: #1976d2;
-    box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.12);
-    background-color: #0f1113;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
 }
 
 .form-input__field[disabled] {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
