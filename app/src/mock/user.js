@@ -1,3 +1,18 @@
+export const RANKS = [
+  { id: 'bronze',   label: 'Bronze',   icon: '🥉', min: 0,   color: '#cd7f32' },
+  { id: 'silver',   label: 'Silver',   icon: '🥈', min: 25,  color: '#c0c0c0' },
+  { id: 'gold',     label: 'Gold',     icon: '🥇', min: 50,  color: '#ffd700' },
+  { id: 'platinum', label: 'Platinum', icon: '🔷', min: 100, color: '#00bcd4' },
+  { id: 'emerald',  label: 'Emerald',  icon: '💚', min: 150, color: '#50c878' },
+  { id: 'diamond',  label: 'Diamond',  icon: '💎', min: 200, color: '#b9f2ff' },
+  { id: 'god',      label: 'God Tier', icon: '⚡', min: 300, color: '#ff6b35' },
+]
+
+export function getUserRank(workouts) {
+  const sorted = [...RANKS].reverse()
+  return sorted.find(r => workouts >= r.min) || RANKS[0]
+}
+
 export const currentUser = {
   id: 'u_marc',
   name: 'Marc Terradas',

@@ -79,6 +79,51 @@ export const achievements = [
   { id: 'a6', title: 'Marathon', earned: false, icon: '🥇', date: null },
 ];
 
+export const userPosts = [
+  {
+    id: 'up1',
+    user: { name: 'Marc Terradas', username: 'marc_fitness', avatar: 'https://i.pravatar.cc/300?u=marc' },
+    when: '2h ago',
+    sport: 'strength',
+    title: 'Pull day — new PR on weighted pull-ups',
+    text: 'Hit +22.5kg × 5. Three months of patient progression. The plan works.',
+    stats: { durationMin: 58 },
+    badge: { label: 'Personal record', icon: '🏆' },
+    kudos: 31,
+    comments: [
+      { user: 'Ava Smith', avatar: 'https://i.pravatar.cc/150?u=ava', text: 'Absolute unit 💪' },
+    ],
+    kudoed: false,
+  },
+  {
+    id: 'up2',
+    user: { name: 'Marc Terradas', username: 'marc_fitness', avatar: 'https://i.pravatar.cc/300?u=marc' },
+    when: 'Yesterday',
+    sport: 'running',
+    title: 'Easy 5k recovery run',
+    text: 'Legs needed it. Kept it slow, heart rate under 145. Feels good to move without a plan sometimes.',
+    stats: { distanceKm: 5.1, durationMin: 28, paceMinKm: '5:29' },
+    kudos: 12,
+    comments: [],
+    kudoed: false,
+  },
+  {
+    id: 'up3',
+    user: { name: 'Marc Terradas', username: 'marc_fitness', avatar: 'https://i.pravatar.cc/300?u=marc' },
+    when: '3 days ago',
+    sport: 'strength',
+    title: 'Leg day — squats back after 2 weeks off',
+    text: 'Lower back is finally OK. Started conservative at 80% of max. Felt great to squat heavy again.',
+    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800',
+    stats: { durationMin: 65 },
+    kudos: 19,
+    comments: [
+      { user: 'Liam Turner', avatar: 'https://i.pravatar.cc/150?u=liam', text: 'Smart to ease back in' },
+    ],
+    kudoed: false,
+  },
+]
+
 export const motivationalQuotes = [
   'Show up, even when small. Especially when small.',
   'You don’t need more discipline. You need a smaller first step.',
