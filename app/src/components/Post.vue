@@ -42,6 +42,37 @@ const totalVolumeKg = computed(() =>
   exercises.value.reduce((sum, ex) => sum + ex.sets * ex.reps * (ex.weightKg || 0), 0)
 )
 
+// ponytail: single-hue sequential ramp (effort low→high), labels + gaps carry identity
+const ZONE_COLORS = ['#63332f', '#8f423b', '#bc5147', '#e66353', '#ff8a70']
+const ZONE_NAMES = ['Easy', 'Steady', 'Tempo', 'Threshold', 'Max']
+
+const splits = computed(() => {
+  const s = props.post.splits
+  if (!s?.length) return []
+  const secs = s.map(x => x.sec)
+  const min = Math.min(...secs)
+  const max = Math.max(...secs)
+  return s.map(x => ({
+    ...x,
+    fastest: x.sec === min,
+    pct: max === min ? 100 : Math.round(40 + ((max - x.sec) / (max - min)) * 60),
+  }))
+})
+
+const fastestSplit = computed(() => splits.value.find(s => s.fastest))
+
+const hrZones = computed(() => {
+  const z = props.post.hr?.zones
+  if (!z?.length) return []
+  const total = z.reduce((sum, x) => sum + x.min, 0)
+  return z.map((x, i) => ({
+    ...x,
+    color: ZONE_COLORS[i],
+    name: ZONE_NAMES[i],
+    pct: total ? (x.min / total) * 100 : 0,
+  }))
+})
+
 function toggleKudos() {
   liked.value ? (localKudos.value -= 1) : (localKudos.value += 1)
   liked.value = !liked.value
@@ -174,9 +205,73 @@ function goToMedia(i) {
         <span class="post__stat-v">{{ post.stats.paceMinKm }}</span>
         <span class="post__stat-l">/km</span>
       </div>
+      <div v-if="post.stats.avgKmh" class="post__stat">
+        <span class="post__stat-v">{{ post.stats.avgKmh }}</span>
+        <span class="post__stat-l">km/h</span>
+      </div>
       <div v-if="post.stats.calories" class="post__stat">
         <span class="post__stat-v">{{ post.stats.calories }}</span>
         <span class="post__stat-l">kcal</span>
+      </div>
+      <div v-if="post.hr?.avg" class="post__stat">
+        <span class="post__stat-v">{{ post.hr.avg }}</span>
+        <span class="post__stat-l">avg bpm</span>
+      </div>
+      <div v-if="post.stats.elevationM" class="post__stat">
+        <span class="post__stat-v">{{ post.stats.elevationM }}</span>
+        <span class="post__stat-l">m elev</span>
+      </div>
+    </div>
+
+    <div v-if="splits.length" class="post__chart">
+      <div class="chart-head">
+        <span class="chart-title">Splits</span>
+        <span class="chart-sub">fastest {{ fastestSplit.pace }} /km</span>
+      </div>
+      <div class="splits">
+        <div
+          v-for="s in splits"
+          :key="s.km"
+          class="split"
+          :title="`km ${s.km} — ${s.pace} /km`"
+        >
+          <span v-if="s.fastest" class="split__pace">{{ s.pace }}</span>
+          <div
+            class="split__col"
+            :class="{ 'split__col--fast': s.fastest }"
+            :style="{ height: s.pct + '%' }"
+          />
+          <span class="split__km">{{ s.km }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="hrZones.length" class="post__chart">
+      <div class="chart-head">
+        <span class="chart-title">Heart rate</span>
+        <span class="chart-sub">avg {{ post.hr.avg }} · max {{ post.hr.max }} bpm</span>
+      </div>
+      <div class="hr-strip">
+        <div
+          v-for="z in hrZones.filter(z => z.min > 0)"
+          :key="z.z"
+          class="hr-seg"
+          :style="{ width: z.pct + '%', background: z.color }"
+          :title="`Z${z.z} ${z.name} — ${z.min} min`"
+        />
+      </div>
+      <div class="hr-legend">
+        <div
+          v-for="z in hrZones"
+          :key="z.z"
+          class="hr-key"
+          :class="{ 'hr-key--empty': z.min === 0 }"
+          :title="z.name"
+        >
+          <span class="hr-dot" :style="{ background: z.color }" />
+          <span class="hr-key__z">Z{{ z.z }}</span>
+          <span class="hr-key__m">{{ z.min }}m</span>
+        </div>
       </div>
     </div>
 
@@ -401,6 +496,100 @@ function goToMedia(i) {
 .post__stat { display: flex; flex-direction: column; align-items: flex-start; }
 .post__stat-v { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: var(--color-text); }
 .post__stat-l { font-size: var(--fs-xs); color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* Charts (splits + heart rate) */
+.post__chart {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.chart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.chart-title {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-dim);
+}
+.chart-sub {
+  font-size: var(--fs-xs);
+  color: var(--color-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.splits {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  height: 84px;
+}
+.split {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.split__col {
+  width: 100%;
+  max-width: 28px;
+  background: var(--color-surface-2);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s var(--ease);
+}
+.split__col--fast { background: var(--color-accent); }
+.split__pace {
+  font-size: 0.65rem;
+  font-weight: var(--fw-semibold);
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.split__km {
+  font-size: 0.65rem;
+  color: var(--color-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.hr-strip {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.hr-seg { min-width: 4px; }
+.hr-legend {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.hr-key {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.hr-key--empty { opacity: 0.4; }
+.hr-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hr-key__z { font-weight: var(--fw-semibold); }
+.hr-key__m { color: var(--color-text-dim); }
 
 /* Exercises */
 .post__exercises {

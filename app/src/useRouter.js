@@ -23,6 +23,7 @@ const routes = [
   { path: '/search', component: SearchView },
   { path: '/notifications', component: NotificationView },
   { path: '/settings', component: SettingsView },
+  { path: '/ranking', redirect: '/search?tab=ranking' },
 ]
 
 export const router = createRouter({

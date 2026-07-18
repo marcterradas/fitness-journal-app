@@ -1,21 +1,25 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Card from '@/components/Card.vue'
 import Chip from '@/components/Chip.vue'
 import Avatar from '@/components/Avatar.vue'
 import Badge from '@/components/Badge.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import SportIcon from '@/components/SportIcon.vue'
+import Leaderboard from '@/components/Leaderboard.vue'
 
 import { friends } from '@/mock/user'
 import { exercises, workoutPlans } from '@/mock/exercises'
 import { challenges, feedPosts } from '@/mock/social'
 
+const route = useRoute()
 const query = ref('')
-const tab = ref('people')
+const tab = ref(route.query.tab === 'ranking' ? 'ranking' : 'people')
 
 const tabs = [
   { id: 'people', label: 'People', icon: '👥' },
+  { id: 'ranking', label: 'Ranking', icon: '🏆' },
   { id: 'workouts', label: 'Workouts', icon: '💪' },
   { id: 'exercises', label: 'Exercises', icon: '🏋️' },
   { id: 'challenges', label: 'Challenges', icon: '🎯' },
@@ -50,10 +54,10 @@ function setTab(id) { tab.value = id }
   <div class="search">
     <header class="search__head">
       <h1 class="search__title">Explore</h1>
-      <p class="search__sub">Find friends, workouts, exercises, challenges.</p>
+      <p class="search__sub">Rankings, friends, workouts, exercises, challenges.</p>
     </header>
 
-    <div class="search__bar">
+    <div v-if="tab !== 'ranking'" class="search__bar">
       <span class="search__icon">🔍</span>
       <input
         v-model="query"
@@ -82,7 +86,9 @@ function setTab(id) { tab.value = id }
       </div>
     </section>
 
-    <div v-if="results.length" class="results">
+    <Leaderboard v-if="tab === 'ranking'" />
+
+    <div v-else-if="results.length" class="results">
       <!-- People -->
       <template v-if="tab === 'people'">
         <Card v-for="u in results" :key="u.id" padding="md" class="row">

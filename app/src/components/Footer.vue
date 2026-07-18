@@ -8,9 +8,10 @@ const route = useRoute()
 
 const tabs = [
   { path: '/',        icon: 'house',  label: 'Home' },
-  { path: '/journal', icon: 'book',   label: 'Journal' },
-  { path: '/search',  icon: 'search', label: 'Explore' },
-  { path: '/profile', icon: 'user',   label: 'Me' },
+  { path: '/journal', icon: 'book',    label: 'Journal' },
+  { path: '/search',  icon: 'search',  label: 'Explore' },
+  { path: '/messages', icon: 'message', label: 'Chat' },
+  { path: '/profile', icon: 'user',    label: 'Me' },
 ]
 
 const activePath = computed(() => route.path)

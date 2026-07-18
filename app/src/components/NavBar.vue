@@ -15,9 +15,6 @@ function go(path) { router.push(path) }
     </button>
 
     <div class="navbar__actions">
-      <button class="navbar__btn" @click="go('/messages')" aria-label="Messages" title="Messages">
-        <Icon name="message" />
-      </button>
       <button class="navbar__btn" @click="go('/notifications')" aria-label="Notifications" title="Notifications">
         <Icon name="bell" />
         <span class="navbar__dot" aria-hidden="true" />

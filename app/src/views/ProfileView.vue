@@ -5,7 +5,7 @@ import Stat from '@/components/Stat.vue'
 import Post from '@/components/Post.vue'
 
 import { currentUser, RANKS, getUserRank } from '@/mock/user'
-import { userPosts } from '@/mock/social'
+import { userPosts, achievements } from '@/mock/social'
 
 const rank = getUserRank(currentUser.stats.workouts)
 const nextRank = RANKS[RANKS.findIndex(r => r.id === rank.id) + 1] || null
@@ -43,6 +43,7 @@ const nextRank = RANKS[RANKS.findIndex(r => r.id === rank.id) + 1] || null
             :title="r.label"
           />
         </div>
+        <router-link to="/ranking" class="rank__link">Leaderboard ›</router-link>
       </div>
 
       <div class="hero__stats">
@@ -52,6 +53,23 @@ const nextRank = RANKS[RANKS.findIndex(r => r.id === rank.id) + 1] || null
         <Stat icon="🔥" :value="currentUser.stats.streakDays" label="day streak" />
       </div>
     </Card>
+
+    <section>
+      <h3 class="section-h">Achievements</h3>
+      <div class="achievements">
+        <div
+          v-for="a in achievements"
+          :key="a.id"
+          class="ach"
+          :class="{ 'ach--locked': !a.earned }"
+          :title="a.earned ? `Earned ${a.date}` : 'Not earned yet'"
+        >
+          <span class="ach__icon">{{ a.earned ? a.icon : '🔒' }}</span>
+          <span class="ach__title">{{ a.title }}</span>
+          <span class="ach__date">{{ a.earned ? a.date : '—' }}</span>
+        </div>
+      </div>
+    </section>
 
     <section>
       <h3 class="section-h">Posts</h3>
@@ -148,6 +166,37 @@ const nextRank = RANKS[RANKS.findIndex(r => r.id === rank.id) + 1] || null
   border-radius: 50%;
   display: block;
 }
+.rank__link {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--rank-color);
+  text-decoration: none;
+  white-space: nowrap;
+  margin-left: var(--space-2);
+}
+.rank__link:hover { text-decoration: underline; }
+
+/* Achievements */
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: var(--space-2);
+}
+.ach {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+.ach--locked { opacity: 0.45; }
+.ach__icon { font-size: 1.5rem; }
+.ach__title { font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
+.ach__date { font-size: 0.65rem; color: var(--color-text-dim); }
 
 /* Posts */
 .profile__posts { display: flex; flex-direction: column; gap: var(--space-4); }
