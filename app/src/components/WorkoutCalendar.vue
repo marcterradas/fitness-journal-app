@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { SPORT_TYPES } from '@/mock/workouts'
+import { SPORT_TYPES, ymd } from '@/mock/workouts'
 
 const props = defineProps({
   entries: { type: Array, required: true },
@@ -37,13 +37,6 @@ const entriesByDate = computed(() => {
   }
   return map
 })
-
-function ymd(d) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
 
 const cells = computed(() => {
   const year = cursor.value.getFullYear()
