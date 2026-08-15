@@ -21,6 +21,11 @@ export const currentUser = {
   bio: 'Calisthenics + climbing. Building habits, not streaks.',
   location: 'Barcelona',
   joinedAt: '2024-08-12',
+  birthDate: '1994-03-22',
+  sex: 'male',
+  heightCm: 178,
+  weightKg: 74.5,
+  primarySport: 'strength',
   stats: {
     workouts: 142,
     followers: 384,
@@ -36,6 +41,35 @@ export const currentUser = {
     { id: 'g3', label: '4 sessions / week', progress: 0.8 },
   ],
 };
+
+export const SEXES = [
+  { id: 'female', label: 'Female' },
+  { id: 'male', label: 'Male' },
+  { id: 'other', label: 'Other' },
+  { id: 'unset', label: 'Rather not say' },
+]
+
+export function bmi(weightKg, heightCm) {
+  if (!weightKg || !heightCm) return null
+  return weightKg / (heightCm / 100) ** 2
+}
+
+export function bmiLabel(value) {
+  if (value === null) return '—'
+  if (value < 18.5) return 'Underweight'
+  if (value < 25) return 'Healthy'
+  if (value < 30) return 'Overweight'
+  return 'Obese'
+}
+
+export function ageFrom(birthDate) {
+  if (!birthDate) return null
+  const b = new Date(birthDate)
+  const now = new Date()
+  let age = now.getFullYear() - b.getFullYear()
+  const before = now.getMonth() < b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() < b.getDate())
+  return before ? age - 1 : age
+}
 
 export const friends = [
   { id: 'u1', name: 'Ava Smith', username: 'ava_fit', avatar: 'https://i.pravatar.cc/150?u=ava', sport: 'Running' },
