@@ -73,6 +73,14 @@ const hrZones = computed(() => {
   }))
 })
 
+// ponytail: splits/HR/exercises are the noisy part of the feed — one tap away, not gone
+const showDetails = ref(false)
+const detailBits = computed(() => [
+  splits.value.length ? `${splits.value.length} splits` : '',
+  hrZones.value.length ? 'heart rate' : '',
+  exercises.value.length ? `${exercises.value.length} exercises` : '',
+].filter(Boolean))
+
 function toggleKudos() {
   liked.value ? (localKudos.value -= 1) : (localKudos.value += 1)
   liked.value = !liked.value
@@ -223,6 +231,17 @@ function goToMedia(i) {
       </div>
     </div>
 
+    <button
+      v-if="detailBits.length"
+      class="post__details-toggle"
+      :aria-expanded="showDetails"
+      @click="showDetails = !showDetails"
+    >
+      <span>{{ detailBits.join(' · ') }}</span>
+      <span class="post__caret">{{ showDetails ? '▴' : '▾' }}</span>
+    </button>
+
+    <template v-if="showDetails">
     <div v-if="splits.length" class="post__chart">
       <div class="chart-head">
         <span class="chart-title">Splits</span>
@@ -297,6 +316,7 @@ function goToMedia(i) {
         </div>
       </div>
     </div>
+    </template>
 
     <div class="post__actions">
       <button
@@ -395,6 +415,28 @@ function goToMedia(i) {
 .post__title { font-size: var(--fs-lg); font-weight: var(--fw-semibold); color: var(--color-text); }
 .post__text { color: var(--color-text); line-height: 1.55; }
 .post__badge-row { margin-top: var(--space-1); }
+
+/* Details toggle */
+.post__details-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-dim);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease);
+}
+.post__details-toggle:hover { color: var(--color-text); }
+.post__caret { font-size: var(--fs-sm); }
 
 /* Media */
 .post__media { position: relative; }

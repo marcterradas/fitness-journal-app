@@ -118,6 +118,22 @@ export const journalEntries = [
   { id: 'j20', date: daysAgo(30), sport: 'yoga',     title: 'Mobility 20',            durationMin: 20, mood: 'focused', notes: 'T-spine + ankles.', rpe: 2 },
 ];
 
+// ponytail: top set per session, one series per exercise — enough to draw a trend line
+const progressPoints = (start, step, weeks = 8) =>
+  Array.from({ length: weeks }, (_, i) => ({
+    date: daysAgo((weeks - 1 - i) * 7),
+    // deload dip every 3rd week so the line is not a perfect ramp
+    value: Math.round((start + step * i - (i % 3 === 1 ? step * 0.8 : 0)) * 10) / 10,
+  }))
+
+export const exerciseProgress = [
+  { id: 'bench', name: 'Bench Press', unit: 'kg', points: progressPoints(82.5, 2.5) },
+  { id: 'squat', name: 'Squat', unit: 'kg', points: progressPoints(100, 3.75) },
+  { id: 'deadlift', name: 'Deadlift', unit: 'kg', points: progressPoints(130, 3.1) },
+  { id: 'ohp', name: 'Overhead Press', unit: 'kg', points: progressPoints(50, 1.25) },
+  { id: 'pullups', name: 'Pull Ups', unit: 'reps', points: progressPoints(8, 0.75) },
+];
+
 export const recentActivity = [
   { id: 'a1', when: '2h ago', text: 'Completed Upper Body — Pull Focus', icon: '✅' },
   { id: 'a2', when: 'Yesterday', text: 'New PR — Bench Press 100kg × 5', icon: '🏆' },

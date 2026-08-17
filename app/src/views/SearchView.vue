@@ -1,158 +1,219 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { useRoute } from 'vue-router'
 import Card from '@/components/Card.vue'
 import Chip from '@/components/Chip.vue'
 import Avatar from '@/components/Avatar.vue'
-import Badge from '@/components/Badge.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import SportIcon from '@/components/SportIcon.vue'
 import Leaderboard from '@/components/Leaderboard.vue'
 
-import { friends } from '@/mock/user'
+import { friends, getUserRank } from '@/mock/user'
 import { exercises, workoutPlans } from '@/mock/exercises'
 import { challenges, feedPosts } from '@/mock/social'
+import { friendsBoard, globalBoard } from '@/mock/leaderboard'
 
 const route = useRoute()
 const query = ref('')
-const tab = ref(route.query.tab === 'ranking' ? 'ranking' : 'people')
+const tab = ref(route.query.tab === 'ranking' ? 'ranking' : 'all')
 
 const tabs = [
+  { id: 'all', label: 'All', icon: '✨' },
   { id: 'people', label: 'People', icon: '👥' },
-  { id: 'ranking', label: 'Ranking', icon: '🏆' },
   { id: 'workouts', label: 'Workouts', icon: '💪' },
   { id: 'exercises', label: 'Exercises', icon: '🏋️' },
   { id: 'challenges', label: 'Challenges', icon: '🎯' },
   { id: 'posts', label: 'Posts', icon: '📝' },
+  { id: 'ranking', label: 'Ranking', icon: '🏆' },
 ]
 
 const trending = ['#PullUpProgress', '#April30Mobility', '#Sub50_10k', '#PostureFix', '#ZeroSugarApril']
 
-function match(s) { return s.toLowerCase().includes(query.value.toLowerCase()) }
+// ponytail: one row shape for every kind, so the list markup is written once
+const SOURCES = [
+  {
+    id: 'people', label: 'People', action: 'Follow', done: 'Following',
+    items: () => friends.map(u => ({
+      id: u.id, title: u.name, sub: `@${u.username} · ${u.sport}`, avatar: u.avatar,
+      terms: [u.name, u.username, u.sport],
+    })),
+  },
+  {
+    id: 'workouts', label: 'Workouts', action: 'Try', done: 'Saved',
+    items: () => workoutPlans.map(w => ({
+      id: w.id, title: w.title, sub: `${w.durationMin} min · ${w.level}`, sport: w.sport,
+      terms: [w.title, w.sport, w.level],
+    })),
+  },
+  {
+    id: 'exercises', label: 'Exercises', action: 'Add', done: 'Added',
+    items: () => exercises.map(e => ({
+      id: e.id, title: e.name, sub: `${e.muscle} · ${e.equipment}`, emoji: '🏋️',
+      terms: [e.name, e.muscle, e.equipment],
+    })),
+  },
+  {
+    id: 'challenges', label: 'Challenges', action: 'Join', done: 'Joined',
+    items: () => challenges.map(c => ({
+      id: c.id, title: c.title, sub: `${c.members.toLocaleString()} members · ${c.daysLeft} days left`, emoji: c.emoji,
+      terms: [c.title],
+    })),
+  },
+  {
+    id: 'posts', label: 'Posts',
+    items: () => feedPosts.map(p => ({
+      id: p.id, title: p.title, sub: `${p.user.name} · ${p.when}`, avatar: p.user.avatar, text: p.text,
+      terms: [p.title, p.text, p.user.name],
+    })),
+  },
+]
 
-const results = computed(() => {
-  const q = query.value.trim()
-  switch (tab.value) {
-    case 'people':
-      return friends.filter(u => !q || match(u.name) || match(u.username))
-    case 'workouts':
-      return workoutPlans.filter(w => !q || match(w.title) || match(w.sport))
-    case 'exercises':
-      return exercises.filter(e => !q || match(e.name) || match(e.muscle))
-    case 'challenges':
-      return challenges.filter(c => !q || match(c.title))
-    case 'posts':
-      return feedPosts.filter(p => !q || match(p.title) || match(p.text))
-    default: return []
+const q = computed(() => query.value.trim().toLowerCase().replace(/^#/, ''))
+
+const groups = computed(() =>
+  SOURCES
+    .filter(s => tab.value === 'all' || tab.value === s.id)
+    .map(s => ({
+      ...s,
+      hits: s.items().filter(i => !q.value || i.terms.some(t => t.toLowerCase().includes(q.value))),
+    }))
+    .filter(g => g.hits.length)
+)
+
+const totalHits = computed(() => groups.value.reduce((a, g) => a + g.hits.length, 0))
+const isDiscover = computed(() => tab.value === 'all' && !q.value)
+
+// ponytail: plain Set of "kind:id" — no per-entity store until there's a backend
+const saved = reactive(new Set())
+const key = (g, i) => `${g.id}:${i.id}`
+function toggle(g, i) {
+  const k = key(g, i)
+  saved.has(k) ? saved.delete(k) : saved.add(k)
+}
+
+const topThree = friendsBoard.slice(0, 3)
+const MEDALS = ['🥇', '🥈', '🥉']
+
+const DISCOVER = [
+  { id: 'people', label: 'Athletes to follow', take: 3 },
+  { id: 'workouts', label: 'Popular workouts', take: 3 },
+  { id: 'challenges', label: 'Open challenges', take: 2 },
+]
+
+// discover = curated slices; otherwise = whatever matched
+const sections = computed(() => {
+  if (isDiscover.value) {
+    return DISCOVER.map(d => {
+      const g = SOURCES.find(s => s.id === d.id)
+      return { group: g, label: d.label, hits: g.items().slice(0, d.take), more: true }
+    })
   }
+  return groups.value.map(g => ({
+    group: g,
+    label: `${g.label} · ${g.hits.length}`,
+    hits: tab.value === 'all' ? g.hits.slice(0, 3) : g.hits,
+    more: tab.value === 'all' && g.hits.length > 3,
+    bare: tab.value !== 'all',
+  }))
 })
 
-function setTab(id) { tab.value = id }
+function openTab(id) {
+  tab.value = id
+}
+
+function onType() {
+  if (tab.value === 'ranking') tab.value = 'all'
+}
 </script>
 
 <template>
   <div class="search">
     <header class="search__head">
       <h1 class="search__title">Explore</h1>
-      <p class="search__sub">Rankings, friends, workouts, exercises, challenges.</p>
+      <p class="search__sub">Athletes, workouts, challenges and the monthly ranking.</p>
     </header>
 
-    <div v-if="tab !== 'ranking'" class="search__bar">
+    <div class="search__bar">
       <span class="search__icon">🔍</span>
       <input
         v-model="query"
         type="text"
         class="search__input"
-        :placeholder="`Search ${tabs.find(t => t.id === tab).label.toLowerCase()}...`"
+        placeholder="Search people, workouts, exercises…"
+        @input="onType"
       />
       <button v-if="query" class="search__clear" @click="query = ''" aria-label="Clear">×</button>
     </div>
 
     <div class="search__tabs hide-scrollbar">
-      <Chip
-        v-for="t in tabs"
-        :key="t.id"
-        :active="tab === t.id"
-        @click="setTab(t.id)"
-      >
+      <Chip v-for="t in tabs" :key="t.id" :active="tab === t.id" @click="openTab(t.id)">
         {{ t.icon }} {{ t.label }}
       </Chip>
     </div>
 
-    <section v-if="!query && tab === 'people'" class="trending">
-      <h3 class="search__section-h">Trending</h3>
-      <div class="trending__chips">
-        <Chip v-for="t in trending" :key="t" size="sm" @click="query = t">{{ t }}</Chip>
-      </div>
-    </section>
-
     <Leaderboard v-if="tab === 'ranking'" />
 
-    <div v-else-if="results.length" class="results">
-      <!-- People -->
-      <template v-if="tab === 'people'">
-        <Card v-for="u in results" :key="u.id" padding="md" class="row">
-          <Avatar :src="u.avatar" :alt="u.name" size="md" />
-          <div class="row__main">
-            <span class="row__title">{{ u.name }}</span>
-            <span class="row__sub">@{{ u.username }} · {{ u.sport }}</span>
+    <template v-else-if="isDiscover || totalHits">
+      <!-- Discover header blocks -->
+      <template v-if="isDiscover">
+        <section class="block">
+          <h3 class="block__h">Trending</h3>
+          <div class="block__chips">
+            <Chip v-for="t in trending" :key="t" size="sm" @click="query = t">{{ t }}</Chip>
           </div>
-          <button class="row__btn">Follow</button>
-        </Card>
-      </template>
+        </section>
 
-      <!-- Workouts -->
-      <template v-else-if="tab === 'workouts'">
-        <Card v-for="w in results" :key="w.id" padding="md" class="row">
-          <SportIcon :sport="w.sport" size="md" />
-          <div class="row__main">
-            <span class="row__title">{{ w.title }}</span>
-            <div class="row__badges">
-              <Badge :tone="w.sport">{{ w.sport }}</Badge>
-              <Badge tone="neutral">⏱ {{ w.durationMin }} min</Badge>
-              <Badge tone="neutral">{{ w.level }}</Badge>
+        <section class="block">
+          <div class="block__head">
+            <h3 class="block__h">Top this month</h3>
+            <button class="block__more" @click="openTab('ranking')">Full ranking →</button>
+          </div>
+          <Card padding="none">
+            <div v-for="(u, i) in topThree" :key="u.id" class="lead" :class="{ 'lead--me': u.me }">
+              <span class="lead__medal">{{ MEDALS[i] }}</span>
+              <Avatar :src="u.avatar" :alt="u.name" size="sm" />
+              <span class="lead__name">{{ u.me ? 'You' : u.name }}</span>
+              <span class="lead__tier" :title="getUserRank(u.workouts).label">{{ getUserRank(u.workouts).icon }}</span>
+              <span class="lead__pts">{{ u.points.toLocaleString() }} pts</span>
             </div>
-          </div>
-          <button class="row__btn">Try</button>
-        </Card>
+            <div class="lead lead--foot">
+              You're <strong>#{{ globalBoard.me.rank.toLocaleString() }}</strong>
+              of {{ globalBoard.totalAthletes.toLocaleString() }} athletes globally
+            </div>
+          </Card>
+        </section>
       </template>
 
-      <!-- Exercises -->
-      <template v-else-if="tab === 'exercises'">
-        <Card v-for="e in results" :key="e.id" padding="md" class="row">
-          <span class="row__emoji">🏋️</span>
-          <div class="row__main">
-            <span class="row__title">{{ e.name }}</span>
-            <span class="row__sub">{{ e.muscle }} · {{ e.equipment }}</span>
-          </div>
-          <button class="row__btn">Add</button>
-        </Card>
-      </template>
+      <p v-else-if="q" class="search__count">
+        {{ totalHits }} result{{ totalHits === 1 ? '' : 's' }} for “{{ query }}”
+      </p>
 
-      <!-- Challenges -->
-      <template v-else-if="tab === 'challenges'">
-        <Card v-for="c in results" :key="c.id" padding="md" class="row">
-          <span class="row__emoji">{{ c.emoji }}</span>
-          <div class="row__main">
-            <span class="row__title">{{ c.title }}</span>
-            <span class="row__sub">{{ c.members.toLocaleString() }} members · {{ c.daysLeft }} days left</span>
-          </div>
-          <button class="row__btn">Join</button>
-        </Card>
-      </template>
-
-      <!-- Posts -->
-      <template v-else-if="tab === 'posts'">
-        <Card v-for="p in results" :key="p.id" padding="md" class="row">
-          <Avatar :src="p.user.avatar" :alt="p.user.name" size="md" />
-          <div class="row__main">
-            <span class="row__title">{{ p.title }}</span>
-            <span class="row__sub">{{ p.user.name }} · {{ p.when }}</span>
-            <p class="row__text">{{ p.text }}</p>
-          </div>
-        </Card>
-      </template>
-    </div>
+      <!-- Result / discover lists -->
+      <section v-for="s in sections" :key="s.group.id" class="block">
+        <div v-if="!s.bare" class="block__head">
+          <h3 class="block__h">{{ s.label }}</h3>
+          <button v-if="s.more" class="block__more" @click="openTab(s.group.id)">See all →</button>
+        </div>
+        <div class="results">
+          <Card v-for="i in s.hits" :key="i.id" padding="md" class="row">
+            <Avatar v-if="i.avatar" :src="i.avatar" :alt="i.title" size="md" />
+            <SportIcon v-else-if="i.sport" :sport="i.sport" size="md" />
+            <span v-else class="row__emoji">{{ i.emoji }}</span>
+            <div class="row__main">
+              <span class="row__title">{{ i.title }}</span>
+              <span class="row__sub">{{ i.sub }}</span>
+              <p v-if="i.text" class="row__text">{{ i.text }}</p>
+            </div>
+            <button
+              v-if="s.group.action"
+              class="row__btn"
+              :class="{ 'row__btn--done': saved.has(key(s.group, i)) }"
+              @click="toggle(s.group, i)"
+            >{{ saved.has(key(s.group, i)) ? s.group.done : s.group.action }}</button>
+          </Card>
+        </div>
+      </section>
+    </template>
 
     <EmptyState
       v-else
@@ -202,30 +263,55 @@ function setTab(id) { tab.value = id }
   font-size: var(--fs-md);
   line-height: 1;
 }
+.search__tabs { display: flex; gap: var(--space-2); overflow-x: auto; }
+.search__count { font-size: var(--fs-sm); color: var(--color-text-muted); }
 
-.search__tabs {
-  display: flex;
-  gap: var(--space-2);
-  overflow-x: auto;
-}
-
-.trending { display: flex; flex-direction: column; gap: var(--space-2); }
-.search__section-h {
+/* Sections */
+.block { display: flex; flex-direction: column; gap: var(--space-2); }
+.block__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.block__h {
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
   color: var(--color-text-muted);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.trending__chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.block__more {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.block__chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
-.results { display: flex; flex-direction: column; gap: var(--space-2); }
-
-.row {
+/* Ranking preview */
+.lead {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
 }
+.lead--me { background: var(--color-accent-soft); }
+.lead__medal { font-size: var(--fs-md); }
+.lead__name { flex: 1; min-width: 0; font-weight: var(--fw-medium); color: var(--color-text); }
+.lead__tier { font-size: var(--fs-sm); }
+.lead__pts { font-size: var(--fs-xs); color: var(--color-text-dim); font-variant-numeric: tabular-nums; }
+.lead--foot {
+  border-bottom: none;
+  font-size: var(--fs-xs);
+  color: var(--color-text-dim);
+  justify-content: center;
+}
+.lead--foot strong { color: var(--color-text); }
+
+.results { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.row { display: flex; align-items: center; gap: var(--space-3); }
 .row__emoji {
   font-size: 1.5rem;
   width: 2.5rem;
@@ -240,8 +326,15 @@ function setTab(id) { tab.value = id }
 .row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 .row__title { color: var(--color-text); font-weight: var(--fw-semibold); }
 .row__sub { color: var(--color-text-dim); font-size: var(--fs-xs); }
-.row__text { color: var(--color-text-muted); font-size: var(--fs-sm); margin-top: var(--space-1); }
-.row__badges { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-1); }
+.row__text {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  margin-top: var(--space-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .row__btn {
   padding: var(--space-2) var(--space-4);
   background: var(--color-accent);
@@ -255,4 +348,10 @@ function setTab(id) { tab.value = id }
   transition: background var(--t-fast) var(--ease);
 }
 .row__btn:hover { background: var(--color-accent-hover); }
+.row__btn--done {
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+.row__btn--done:hover { background: var(--color-surface-hover); }
 </style>

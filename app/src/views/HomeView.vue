@@ -18,37 +18,36 @@ const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.lengt
       <StoriesRow :stories="stories" show-add />
     </section>
 
+    <!-- Your week — first thing on every screen size -->
+    <Card padding="md" class="week">
+      <div class="week__body">
+        <ProgressRing :value="weeklyDone / weeklyGoal" :size="64" :stroke="6">
+          <span class="week__count">{{ weeklyDone }}/{{ weeklyGoal }}</span>
+        </ProgressRing>
+        <div class="week__right">
+          <div class="week__days">
+            <div v-for="d in weeklyProgress" :key="d.day" class="wday" :title="d.done ? `${d.day} — ${d.sport}` : d.day">
+              <span
+                class="wday__dot"
+                :class="{ 'wday__dot--done': d.done }"
+                :style="d.done ? { background: `var(--sport-${d.sport})` } : {}"
+              />
+              <span class="wday__l">{{ d.day[0] }}</span>
+            </div>
+          </div>
+          <span class="week__meta">🔥 {{ streakDays }} day streak · ⏱ {{ minutesThisWeek }} min this week</span>
+        </div>
+        <router-link to="/journal" class="aside-link">Journal ›</router-link>
+      </div>
+      <p class="week__quote">“{{ quote }}”</p>
+    </Card>
+
     <div class="home__body">
       <section class="home__feed">
         <Post v-for="p in feedPosts" :key="p.id" :post="p" />
       </section>
 
       <aside class="home__aside">
-        <Card padding="md" class="week">
-          <div class="aside-head">
-            <h3 class="aside-title">Your week</h3>
-            <router-link to="/journal" class="aside-link">Journal ›</router-link>
-          </div>
-          <div class="week__body">
-            <ProgressRing :value="weeklyDone / weeklyGoal" :size="72" :stroke="7">
-              <span class="week__count">{{ weeklyDone }}/{{ weeklyGoal }}</span>
-            </ProgressRing>
-            <div class="week__right">
-              <div class="week__days">
-                <div v-for="d in weeklyProgress" :key="d.day" class="wday" :title="d.done ? `${d.day} — ${d.sport}` : d.day">
-                  <span
-                    class="wday__dot"
-                    :class="{ 'wday__dot--done': d.done }"
-                    :style="d.done ? { background: `var(--sport-${d.sport})` } : {}"
-                  />
-                  <span class="wday__l">{{ d.day[0] }}</span>
-                </div>
-              </div>
-              <span class="week__meta">🔥 {{ streakDays }} day streak · ⏱ {{ minutesThisWeek }} min</span>
-            </div>
-          </div>
-        </Card>
-
         <Card padding="md" class="chal">
           <div class="aside-head">
             <h3 class="aside-title">Challenges</h3>
@@ -67,10 +66,6 @@ const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.lengt
         </Card>
 
         <FollowSuggestionsForYou />
-
-        <Card padding="md" variant="ghost" class="quote">
-          <p class="quote__text">“{{ quote }}”</p>
-        </Card>
       </aside>
     </div>
   </div>
@@ -144,6 +139,14 @@ const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.lengt
 
 /* Your week */
 .week__body { display: flex; align-items: center; gap: var(--space-4); }
+.week__quote {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-xs);
+  color: var(--color-text-dim);
+  font-style: italic;
+}
 .week__count { font-size: var(--fs-sm); font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; }
 .week__right { flex: 1; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 .week__days { display: flex; gap: var(--space-2); }
@@ -178,15 +181,6 @@ const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.lengt
 }
 .chal__bar { height: 100%; background: var(--color-accent); border-radius: var(--radius-pill); }
 .chal__sub { font-size: var(--fs-xs); color: var(--color-text-dim); }
-
-/* Quote */
-.quote__text {
-  font-size: var(--fs-sm);
-  color: var(--color-text-muted);
-  font-style: italic;
-  text-align: center;
-  line-height: 1.6;
-}
 
 @media (min-width: 960px) {
   .home__body {

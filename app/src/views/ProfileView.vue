@@ -6,6 +6,7 @@ import Avatar from '@/components/Avatar.vue'
 import Stat from '@/components/Stat.vue'
 import Chip from '@/components/Chip.vue'
 import Post from '@/components/Post.vue'
+import TrainingSummary from '@/components/TrainingSummary.vue'
 
 import { currentUser, RANKS, SEXES, getUserRank, bmi, bmiLabel, ageFrom } from '@/mock/user'
 import { SPORT_TYPES } from '@/mock/workouts'
@@ -18,6 +19,9 @@ const user = reactive(currentUser)
 
 const rank = computed(() => getUserRank(user.stats.workouts))
 const nextRank = computed(() => RANKS[RANKS.findIndex(r => r.id === rank.value.id) + 1] || null)
+
+const tab = ref('posts')
+const earned = computed(() => achievements.filter(a => a.earned).length)
 
 const age = computed(() => ageFrom(user.birthDate))
 const bmiValue = computed(() => bmi(user.weightKg, user.heightCm))
@@ -97,11 +101,39 @@ function saveProfile() {
       </div>
     </Card>
 
-    <!-- Body & training -->
-    <section>
-      <h3 class="section-h">Body & training</h3>
-      <Card padding="md">
-        <div class="body">
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button
+        v-for="t in [
+          { id: 'posts', label: `Posts · ${userPosts.length}` },
+          { id: 'stats', label: 'Stats' },
+          { id: 'awards', label: `Awards · ${earned}` },
+        ]"
+        :key="t.id"
+        type="button"
+        role="tab"
+        :aria-selected="tab === t.id"
+        class="tabs__btn"
+        :class="{ 'tabs__btn--active': tab === t.id }"
+        @click="tab = t.id"
+      >{{ t.label }}</button>
+    </div>
+
+    <!-- Posts -->
+    <section v-if="tab === 'posts'" class="profile__posts">
+      <Post v-for="p in userPosts" :key="p.id" :post="p" />
+    </section>
+
+    <!-- Stats -->
+    <template v-else-if="tab === 'stats'">
+      <Card padding="lg">
+        <TrainingSummary />
+      </Card>
+
+      <section>
+        <h3 class="section-h">Body & training</h3>
+        <Card padding="md">
+          <div class="body">
           <div class="body__item">
             <span class="body__v">{{ user.heightCm || '—' }}<span class="body__u">cm</span></span>
             <span class="body__l">Height</span>
@@ -126,12 +158,17 @@ function saveProfile() {
             <span class="body__v">{{ user.stats.weeklyDone }}<span class="body__u">/{{ user.stats.weeklyGoal }}</span></span>
             <span class="body__l">Weekly goal</span>
           </div>
-        </div>
-      </Card>
-    </section>
+          </div>
+        </Card>
+      </section>
+    </template>
 
-    <section>
-      <h3 class="section-h">Achievements</h3>
+    <!-- Awards -->
+    <section v-else>
+      <div class="ach__head">
+        <h3 class="section-h" style="margin:0">Achievements</h3>
+        <span class="ach__count">{{ earned }} of {{ achievements.length }} earned</span>
+      </div>
       <div class="achievements">
         <div
           v-for="a in achievements"
@@ -144,13 +181,6 @@ function saveProfile() {
           <span class="ach__title">{{ a.title }}</span>
           <span class="ach__date">{{ a.earned ? a.date : '—' }}</span>
         </div>
-      </div>
-    </section>
-
-    <section>
-      <h3 class="section-h">Posts</h3>
-      <div class="profile__posts">
-        <Post v-for="p in userPosts" :key="p.id" :post="p" />
       </div>
     </section>
 
@@ -370,7 +400,39 @@ function saveProfile() {
 }
 .rank__link:hover { text-decoration: underline; }
 
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: 4px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+.tabs__btn {
+  flex: 1;
+  padding: var(--space-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+}
+.tabs__btn--active { background: var(--color-accent); color: var(--color-accent-ink); }
+
 /* Achievements */
+.ach__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.ach__count { font-size: var(--fs-xs); color: var(--color-text-dim); }
 .achievements {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));

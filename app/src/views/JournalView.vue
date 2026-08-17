@@ -8,6 +8,7 @@ import Badge from '@/components/Badge.vue'
 import Chip from '@/components/Chip.vue'
 import SportIcon from '@/components/SportIcon.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ExerciseProgress from '@/components/ExerciseProgress.vue'
 import { journalEntries, SPORT_TYPES, MOODS, todayWorkout, ymd } from '@/mock/workouts'
 import { currentUser, getUserRank, RANKS } from '@/mock/user'
 
@@ -16,6 +17,7 @@ const router = useRouter()
 // ponytail: same array instance as the mock, so entries added here survive navigation
 const entries = ref(journalEntries)
 
+const tab = ref('log')
 const showMonth = ref(false)
 const showAll = ref(false)
 const openId = ref(null)
@@ -60,6 +62,16 @@ const weekStats = computed(() => {
   return {
     sessions: days.length,
     minutes: days.reduce((a, d) => a + (d.entry.durationMin || 0), 0),
+  }
+})
+
+const monthStats = computed(() => {
+  const from = ymd(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29))
+  const last30 = entries.value.filter(e => e.date >= from)
+  return {
+    sessions: last30.length,
+    hours: Math.round(last30.reduce((a, e) => a + (e.durationMin || 0), 0) / 6) / 10,
+    km: Math.round(last30.reduce((a, e) => a + (e.distanceKm || 0), 0)),
   }
 })
 
@@ -135,46 +147,21 @@ function saveEntry() {
       <button class="journal__new" @click="openForm()">+ New entry</button>
     </header>
 
-    <!-- Goals -->
-    <section>
-      <h3 class="section-h">Goals</h3>
-      <div class="goals">
-        <Card v-for="g in currentUser.goals" :key="g.id" padding="md">
-          <div class="goal__row">
-            <span class="goal__label">{{ g.label }}</span>
-            <Badge tone="accent">{{ Math.round(g.progress * 100) }}%</Badge>
-          </div>
-          <div class="goal__bar">
-            <div class="goal__fill" :style="{ width: `${g.progress * 100}%` }" />
-          </div>
-        </Card>
-      </div>
-    </section>
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button
+        v-for="t in [{ id: 'log', label: 'Log' }, { id: 'progress', label: 'Progress' }]"
+        :key="t.id"
+        type="button"
+        role="tab"
+        :aria-selected="tab === t.id"
+        class="tabs__btn"
+        :class="{ 'tabs__btn--active': tab === t.id }"
+        @click="tab = t.id"
+      >{{ t.label }}</button>
+    </div>
 
-    <!-- Rank -->
-    <Card padding="md" class="rank" :style="{ '--rank-color': rank.color }">
-      <span class="rank__icon">{{ rank.icon }}</span>
-      <div class="rank__info">
-        <span class="rank__label">{{ rank.label }}</span>
-        <span class="rank__sub">
-          {{ currentUser.stats.workouts }} workouts
-          <template v-if="nextRank"> · {{ nextRank.min - currentUser.stats.workouts }} to {{ nextRank.label }}</template>
-        </span>
-      </div>
-      <div class="rank__tiers">
-        <span
-          v-for="r in RANKS"
-          :key="r.id"
-          class="rank__pip"
-          :style="{
-            background: r.id === rank.id ? rank.color : 'var(--color-surface-2)',
-            border: `1px solid ${r.id === rank.id ? rank.color : 'var(--color-border)'}`
-          }"
-          :title="r.label"
-        />
-      </div>
-    </Card>
-
+    <template v-if="tab === 'log'">
     <!-- Today's workout -->
     <Card padding="lg" class="today">
       <div class="today__head">
@@ -289,6 +276,72 @@ function saveEntry() {
         </li>
       </ul>
     </Card>
+    </template>
+
+    <template v-else>
+      <!-- Last 30 days -->
+      <Card padding="md" class="summary">
+        <div class="summary__cell">
+          <span class="summary__value">{{ monthStats.sessions }}</span>
+          <span class="summary__label">Sessions</span>
+        </div>
+        <div class="summary__cell">
+          <span class="summary__value">{{ monthStats.hours }}h</span>
+          <span class="summary__label">Time</span>
+        </div>
+        <div class="summary__cell">
+          <span class="summary__value">{{ monthStats.km }}km</span>
+          <span class="summary__label">Distance</span>
+        </div>
+        <span class="summary__period">Last 30 days</span>
+      </Card>
+
+      <!-- Exercise progress -->
+      <Card padding="lg">
+        <h3 class="section-h">Exercise progress</h3>
+        <ExerciseProgress />
+      </Card>
+
+      <!-- Goals -->
+      <section>
+        <h3 class="section-h">Goals</h3>
+        <div class="goals">
+          <Card v-for="g in currentUser.goals" :key="g.id" padding="md">
+            <div class="goal__row">
+              <span class="goal__label">{{ g.label }}</span>
+              <Badge tone="accent">{{ Math.round(g.progress * 100) }}%</Badge>
+            </div>
+            <div class="goal__bar">
+              <div class="goal__fill" :style="{ width: `${g.progress * 100}%` }" />
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      <!-- Rank -->
+      <Card padding="md" class="rank" :style="{ '--rank-color': rank.color }">
+        <span class="rank__icon">{{ rank.icon }}</span>
+        <div class="rank__info">
+          <span class="rank__label">{{ rank.label }}</span>
+          <span class="rank__sub">
+            {{ currentUser.stats.workouts }} workouts
+            <template v-if="nextRank"> · {{ nextRank.min - currentUser.stats.workouts }} to {{ nextRank.label }}</template>
+          </span>
+        </div>
+        <div class="rank__tiers">
+          <span
+            v-for="r in RANKS"
+            :key="r.id"
+            class="rank__pip"
+            :style="{
+              background: r.id === rank.id ? rank.color : 'var(--color-surface-2)',
+              border: `1px solid ${r.id === rank.id ? rank.color : 'var(--color-border)'}`
+            }"
+            :title="r.label"
+          />
+        </div>
+      </Card>
+    </template>
 
     <!-- New entry sheet -->
     <Transition name="sheet">
@@ -413,6 +466,53 @@ function saveEntry() {
   transition: background var(--t-fast) var(--ease);
 }
 .journal__new:hover { background: var(--color-accent-hover); }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: 4px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+.tabs__btn {
+  flex: 1;
+  padding: var(--space-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+}
+.tabs__btn--active { background: var(--color-accent); color: var(--color-accent-ink); }
+
+/* 30-day summary */
+.summary { display: flex; align-items: center; gap: var(--space-3); position: relative; }
+.summary__cell { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.summary__value {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+.summary__label {
+  font-size: var(--fs-xs);
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.summary__period {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  font-size: var(--fs-xs);
+  color: var(--color-text-dim);
+}
 
 /* Recent sessions */
 .recent__head {
