@@ -1,10 +1,13 @@
 <script setup>
+defineOptions({ inheritAttrs: false })
+
 const props = defineProps({
   id: { type: String, default: '' },
   modelValue: { type: [String, Number], default: '' },
   type: { type: String, default: 'text' },
   placeholder: { type: String, default: '' },
   label: { type: String, default: '' },
+  error: { type: String, default: '' },
 })
 const emits = defineEmits(['update:modelValue'])
 
@@ -21,9 +24,14 @@ const modelValue = defineModel({
       :id="id"
       :type="type"
       :placeholder="placeholder"
+      :aria-invalid="error ? 'true' : undefined"
+      :aria-describedby="error && id ? `${id}-error` : undefined"
       v-model="modelValue"
+      v-bind="$attrs"
       class="form-input__field"
+      :class="{ 'form-input__field--error': error }"
     />
+    <p v-if="error" :id="id ? `${id}-error` : undefined" class="form-input__error">{{ error }}</p>
   </div>
 </template>
 
@@ -62,8 +70,17 @@ const modelValue = defineModel({
   box-shadow: var(--shadow-glow);
 }
 
+.form-input__field--error {
+  border-color: var(--color-danger);
+}
+
 .form-input__field[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.form-input__error {
+  color: var(--color-danger);
+  font-size: var(--fs-xs);
 }
 </style>

@@ -1,5 +1,7 @@
 <script setup>
+import { ref } from 'vue'
 import StoriesRow from '@/components/StoriesRow.vue'
+import StoryViewer from '@/components/StoryViewer.vue'
 import Post from '@/components/Post.vue'
 import Card from '@/components/Card.vue'
 import ProgressRing from '@/components/ProgressRing.vue'
@@ -10,13 +12,23 @@ import { weeklyProgress } from '@/mock/workouts'
 
 const { weeklyDone, weeklyGoal, streakDays, minutesThisWeek } = currentUser.stats
 const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.length]
+
+const storyList = ref(stories)
+const openStory = ref(null)
 </script>
 
 <template>
   <div class="home">
     <section class="stories-bar">
-      <StoriesRow :stories="stories" show-add />
+      <StoriesRow :stories="storyList" show-add @open="openStory = $event" />
     </section>
+
+    <StoryViewer
+      v-if="openStory !== null"
+      :stories="storyList"
+      :start-index="openStory"
+      @close="openStory = null"
+    />
 
     <!-- Your week — first thing on every screen size -->
     <Card padding="md" class="week">
@@ -110,9 +122,10 @@ const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.lengt
   min-width: 0;
 }
 
+/* ponytail: aside (Challenges + Suggestions) is desktop-only; unhidden in the 960px block */
 .home__aside {
+  display: none;
   width: 100%;
-  display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
@@ -191,6 +204,7 @@ const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.lengt
     flex: 1 1 auto;
   }
   .home__aside {
+    display: flex;
     width: 300px;
     flex: 0 0 300px;
     position: sticky;

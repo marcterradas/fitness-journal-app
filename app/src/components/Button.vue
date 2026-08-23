@@ -2,13 +2,14 @@
 defineProps({
   variant: { type: String, default: 'primary' },
   size: { type: String, default: 'md' },
+  type: { type: String, default: 'button' },
 })
 defineEmits(['click'])
 </script>
 
 <template>
   <button
-    type="button"
+    :type="type"
     :class="['btn', `btn--${variant}`, `btn--${size}`]"
     @click="$emit('click')"
   >

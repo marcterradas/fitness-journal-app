@@ -37,6 +37,19 @@ function go(path) { router.push(path) }
   margin-bottom: var(--space-3);
 }
 
+/* ponytail: mobile only — desktop has its own sticky aside that would slide under it */
+@media (max-width: 959px) {
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-nav, 50);
+    background: var(--color-bg);
+    /* cover .app__main's top padding so content doesn't peek above the bar */
+    margin-top: calc(-1 * var(--space-3));
+    padding-top: var(--space-4);
+  }
+}
+
 .navbar__brand {
   display: inline-flex;
   align-items: center;

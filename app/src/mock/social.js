@@ -116,12 +116,52 @@ export const challenges = [
   { id: 'c3', title: 'Run streak — 30 days', members: 2104, daysLeft: 22, progress: 0.25, emoji: '🏃' },
 ];
 
+// Instagram-style stories: one entry per user, each with a sequence of items.
 export const stories = [
-  { id: 's1', title: 'PRs', cover: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=300', emoji: '🏆' },
-  { id: 's2', title: 'Climbs', cover: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=300', emoji: '🧗' },
-  { id: 's3', title: 'Routes', cover: 'https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=300', emoji: '🏃' },
-  { id: 's4', title: 'Recovery', cover: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300', emoji: '🧘' },
-  { id: 's5', title: 'Travel', cover: 'https://images.unsplash.com/photo-1502810190503-8303352d0dd1?w=300', emoji: '✈️' },
+  {
+    id: 's_you',
+    user: { name: 'Your story', username: 'marc_fitness', avatar: 'https://i.pravatar.cc/300?u=marc' },
+    seen: false,
+    items: [
+      { id: 'si1', image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=900', caption: 'Pull day done ✅', when: '2h', likes: 17, liked: false },
+    ],
+  },
+  {
+    id: 's_ava',
+    user: { name: 'Ava Smith', username: 'ava_fit', avatar: 'https://i.pravatar.cc/150?u=ava' },
+    seen: false,
+    items: [
+      { id: 'si2', image: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=900', caption: 'Sunrise 10k 🌅', when: '20m', likes: 13, liked: false },
+      { id: 'si3', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=900', caption: 'Sub-50 finally!', when: '18m', likes: 18, liked: false },
+      { id: 'si4', image: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=900', caption: 'Cooldown by the water', when: '10m', likes: 24, liked: false },
+    ],
+  },
+  {
+    id: 's_liam',
+    user: { name: 'Liam Turner', username: 'liam_lifts', avatar: 'https://i.pravatar.cc/150?u=liam' },
+    seen: false,
+    items: [
+      { id: 'si5', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=900', caption: '102.5kg bench 🔥', when: '3h', likes: 17, liked: false },
+      { id: 'si6', image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=900', caption: 'Push day complete', when: '3h', likes: 19, liked: false },
+    ],
+  },
+  {
+    id: 's_maya',
+    user: { name: 'Maya Lee', username: 'maya_moves', avatar: 'https://i.pravatar.cc/150?u=maya' },
+    seen: true,
+    items: [
+      { id: 'si7', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=900', caption: 'Day 30 — full pancake 🧘', when: '1d', likes: 25, liked: false },
+      { id: 'si8', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900', caption: 'Mobility never stops', when: '1d', likes: 19, liked: false },
+    ],
+  },
+  {
+    id: 's_noah',
+    user: { name: 'Noah Reed', username: 'noah_runs', avatar: 'https://i.pravatar.cc/150?u=noah' },
+    seen: true,
+    items: [
+      { id: 'si9', image: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=900', caption: '60k coastal, no watts goals', when: '1d', likes: 29, liked: false },
+    ],
+  },
 ];
 
 export const achievements = [
