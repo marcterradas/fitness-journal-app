@@ -1,16 +1,11 @@
-export const RANKS = [
-  { id: 'bronze',   label: 'Bronze',   icon: '🥉', min: 0,   color: '#cd7f32' },
-  { id: 'silver',   label: 'Silver',   icon: '🥈', min: 25,  color: '#c0c0c0' },
-  { id: 'gold',     label: 'Gold',     icon: '🥇', min: 50,  color: '#ffd700' },
-  { id: 'platinum', label: 'Platinum', icon: '🔷', min: 100, color: '#00bcd4' },
-  { id: 'emerald',  label: 'Emerald',  icon: '💚', min: 150, color: '#50c878' },
-  { id: 'diamond',  label: 'Diamond',  icon: '💎', min: 200, color: '#b9f2ff' },
-  { id: 'god',      label: 'God Tier', icon: '⚡', min: 300, color: '#ff6b35' },
-]
+import { ymd } from '@/mock/workouts'
 
-export function getUserRank(workouts) {
-  const sorted = [...RANKS].reverse()
-  return sorted.find(r => workouts >= r.min) || RANKS[0]
+// ponytail: mock lifts stay inside the 90-day scoring window as time passes
+function setDay(n) {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() - n)
+  return ymd(d)
 }
 
 export const currentUser = {
@@ -35,6 +30,17 @@ export const currentUser = {
     weeklyDone: 4,
     minutesThisWeek: 312,
   },
+  // ponytail: top set per exercise, the only thing the rank formula reads
+  bestSets: [
+    { exercise: 'Bench Press', weightKg: 100, reps: 5, date: setDay(1) },
+    { exercise: 'Overhead Press', weightKg: 60, reps: 5, date: setDay(1) },
+    { exercise: 'Pull Ups', weightKg: 20, reps: 5, date: setDay(3) },
+    { exercise: 'Barbell Row', weightKg: 85, reps: 8, date: setDay(3) },
+    { exercise: 'Squat', weightKg: 120, reps: 5, date: setDay(6) },
+    { exercise: 'Deadlift', weightKg: 150, reps: 3, date: setDay(6) },
+    { exercise: 'Dips', weightKg: 15, reps: 8, date: setDay(9) },
+    { exercise: 'Romanian Deadlift', weightKg: 110, reps: 8, date: setDay(13) },
+  ],
   goals: [
     { id: 'g1', label: 'Pull-ups @ bw +20kg × 5', progress: 0.6 },
     { id: 'g2', label: 'Run 5k under 22:00', progress: 0.45 },
@@ -71,13 +77,14 @@ export function ageFrom(birthDate) {
   return before ? age - 1 : age
 }
 
+// dots = precomputed rank score; server-side later
 export const friends = [
-  { id: 'u1', name: 'Ava Smith', username: 'ava_fit', avatar: 'https://i.pravatar.cc/150?u=ava', sport: 'Running' },
-  { id: 'u2', name: 'Liam Turner', username: 'liam_lifts', avatar: 'https://i.pravatar.cc/150?u=liam', sport: 'Strength' },
-  { id: 'u3', name: 'Maya Lee', username: 'maya_moves', avatar: 'https://i.pravatar.cc/150?u=maya', sport: 'Yoga' },
-  { id: 'u4', name: 'Noah Reed', username: 'noah_runs', avatar: 'https://i.pravatar.cc/150?u=noah', sport: 'Cycling' },
-  { id: 'u5', name: 'Isabella Cruz', username: 'isabella_cycle', avatar: 'https://i.pravatar.cc/150?u=isabella', sport: 'Cycling' },
-  { id: 'u6', name: 'Lucas Kim', username: 'lucas_lifts', avatar: 'https://i.pravatar.cc/150?u=lucas', sport: 'Strength' },
-  { id: 'u7', name: 'Charlotte Young', username: 'charlotte_y', avatar: 'https://i.pravatar.cc/150?u=charlotte', sport: 'Swimming' },
-  { id: 'u8', name: 'Benjamin Hall', username: 'benji_balance', avatar: 'https://i.pravatar.cc/150?u=benjamin', sport: 'Yoga' },
+  { id: 'u1', name: 'Ava Smith', username: 'ava_fit', avatar: 'https://i.pravatar.cc/150?u=ava', sport: 'Running', dots: 318 },
+  { id: 'u2', name: 'Liam Turner', username: 'liam_lifts', avatar: 'https://i.pravatar.cc/150?u=liam', sport: 'Strength', dots: 402 },
+  { id: 'u3', name: 'Maya Lee', username: 'maya_moves', avatar: 'https://i.pravatar.cc/150?u=maya', sport: 'Yoga', dots: 196 },
+  { id: 'u4', name: 'Noah Reed', username: 'noah_runs', avatar: 'https://i.pravatar.cc/150?u=noah', sport: 'Cycling', dots: 241 },
+  { id: 'u5', name: 'Isabella Cruz', username: 'isabella_cycle', avatar: 'https://i.pravatar.cc/150?u=isabella', sport: 'Cycling', dots: 289 },
+  { id: 'u6', name: 'Lucas Kim', username: 'lucas_lifts', avatar: 'https://i.pravatar.cc/150?u=lucas', sport: 'Strength', dots: 465 },
+  { id: 'u7', name: 'Charlotte Young', username: 'charlotte_y', avatar: 'https://i.pravatar.cc/150?u=charlotte', sport: 'Swimming', dots: 173 },
+  { id: 'u8', name: 'Benjamin Hall', username: 'benji_balance', avatar: 'https://i.pravatar.cc/150?u=benjamin', sport: 'Yoga', dots: 128 },
 ];

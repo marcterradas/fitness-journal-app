@@ -8,7 +8,8 @@ import EmptyState from '@/components/EmptyState.vue'
 import SportIcon from '@/components/SportIcon.vue'
 import Leaderboard from '@/components/Leaderboard.vue'
 
-import { friends, getUserRank } from '@/mock/user'
+import { friends } from '@/mock/user'
+import { tierFromDots } from '@/ranking'
 import { exercises, workoutPlans } from '@/mock/exercises'
 import { challenges, feedPosts } from '@/mock/social'
 import { friendsBoard, globalBoard } from '@/mock/leaderboard'
@@ -130,7 +131,7 @@ function onType() {
   <div class="search">
     <header class="search__head">
       <h1 class="search__title">Explore</h1>
-      <p class="search__sub">Athletes, workouts, challenges and the monthly ranking.</p>
+      <p class="search__sub">Athletes, workouts, challenges and the all-time ranking.</p>
     </header>
 
     <div class="search__bar">
@@ -173,7 +174,7 @@ function onType() {
               <span class="lead__medal">{{ MEDALS[i] }}</span>
               <Avatar :src="u.avatar" :alt="u.name" size="sm" />
               <span class="lead__name">{{ u.me ? 'You' : u.name }}</span>
-              <span class="lead__tier" :title="getUserRank(u.workouts).label">{{ getUserRank(u.workouts).icon }}</span>
+              <span class="lead__tier" :title="`${tierFromDots(u.dots).label} ${tierFromDots(u.dots).division}`">{{ tierFromDots(u.dots).icon }}</span>
               <span class="lead__pts">{{ u.points.toLocaleString() }} pts</span>
             </div>
             <div class="lead lead--foot">

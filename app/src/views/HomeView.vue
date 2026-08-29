@@ -6,6 +6,7 @@ import Post from '@/components/Post.vue'
 import Card from '@/components/Card.vue'
 import ProgressRing from '@/components/ProgressRing.vue'
 import FollowSuggestionsForYou from '@/components/FollowSuggestionsForYou.vue'
+import ReviewCard from '@/components/ReviewCard.vue'
 import { feedPosts, stories, challenges, motivationalQuotes } from '@/mock/social'
 import { currentUser } from '@/mock/user'
 import { weeklyProgress } from '@/mock/workouts'
@@ -56,6 +57,7 @@ const openStory = ref(null)
 
     <div class="home__body">
       <section class="home__feed">
+        <ReviewCard />
         <Post v-for="p in feedPosts" :key="p.id" :post="p" />
       </section>
 

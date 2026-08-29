@@ -31,6 +31,8 @@ defineEmits(['click'])
   transition: all var(--t-fast) var(--ease);
 }
 
+.btn:disabled { opacity: 0.5; cursor: default; }
+
 .btn--sm { padding: var(--space-2) var(--space-3); font-size: var(--fs-sm); }
 .btn--md { padding: var(--space-3) var(--space-4); font-size: var(--fs-md); }
 .btn--lg { padding: var(--space-4) var(--space-5); font-size: var(--fs-lg); }

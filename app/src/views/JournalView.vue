@@ -10,7 +10,8 @@ import SportIcon from '@/components/SportIcon.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ExerciseProgress from '@/components/ExerciseProgress.vue'
 import { journalEntries, SPORT_TYPES, MOODS, todayWorkout, ymd } from '@/mock/workouts'
-import { currentUser, getUserRank, RANKS } from '@/mock/user'
+import { currentUser } from '@/mock/user'
+import { TIERS, rankFromSets } from '@/ranking'
 
 const router = useRouter()
 
@@ -24,8 +25,9 @@ const openId = ref(null)
 const weekSelected = ref(null)
 const toast = ref('')
 
-const rank = getUserRank(currentUser.stats.workouts)
-const nextRank = RANKS[RANKS.findIndex(r => r.id === rank.id) + 1] || null
+const rank = computed(() =>
+  rankFromSets(currentUser.bestSets, { bodyweightKg: currentUser.weightKg, sex: currentUser.sex })
+)
 
 const today = new Date()
 const todayKey = ymd(today)
@@ -322,15 +324,18 @@ function saveEntry() {
       <Card padding="md" class="rank" :style="{ '--rank-color': rank.color }">
         <span class="rank__icon">{{ rank.icon }}</span>
         <div class="rank__info">
-          <span class="rank__label">{{ rank.label }}</span>
-          <span class="rank__sub">
-            {{ currentUser.stats.workouts }} workouts
-            <template v-if="nextRank"> · {{ nextRank.min - currentUser.stats.workouts }} to {{ nextRank.label }}</template>
+          <span class="rank__label">{{ rank.label }} {{ rank.division }}</span>
+          <span v-if="rank.placement" class="rank__sub">
+            {{ rank.placement.done }}/{{ rank.placement.required }} sessions to get placed
+          </span>
+          <span v-else class="rank__sub">
+            {{ rank.dots }} DOTS
+            <template v-if="rank.next"> · {{ rank.toNext }} to {{ rank.next.label }}</template>
           </span>
         </div>
         <div class="rank__tiers">
           <span
-            v-for="r in RANKS"
+            v-for="r in TIERS"
             :key="r.id"
             class="rank__pip"
             :style="{

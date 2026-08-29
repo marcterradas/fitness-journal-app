@@ -8,7 +8,8 @@ import Chip from '@/components/Chip.vue'
 import Post from '@/components/Post.vue'
 import TrainingSummary from '@/components/TrainingSummary.vue'
 
-import { currentUser, RANKS, SEXES, getUserRank, bmi, bmiLabel, ageFrom } from '@/mock/user'
+import { currentUser, SEXES, bmi, bmiLabel, ageFrom } from '@/mock/user'
+import { TIERS, rankFromSets } from '@/ranking'
 import { SPORT_TYPES } from '@/mock/workouts'
 import { userPosts, achievements } from '@/mock/social'
 
@@ -17,8 +18,8 @@ const router = useRouter()
 // ponytail: same object as the mock, so edits stick while navigating
 const user = reactive(currentUser)
 
-const rank = computed(() => getUserRank(user.stats.workouts))
-const nextRank = computed(() => RANKS[RANKS.findIndex(r => r.id === rank.value.id) + 1] || null)
+// recomputes when the profile weight changes — a lighter athlete scores higher for the same lifts
+const rank = computed(() => rankFromSets(user.bestSets, { bodyweightKg: user.weightKg, sex: user.sex }))
 
 const tab = ref('posts')
 const earned = computed(() => achievements.filter(a => a.earned).length)
@@ -75,15 +76,21 @@ function saveProfile() {
       <div class="rank" :style="{ '--rank-color': rank.color }">
         <span class="rank__icon">{{ rank.icon }}</span>
         <div class="rank__info">
-          <span class="rank__label">{{ rank.label }}</span>
-          <span class="rank__sub">
-            {{ user.stats.workouts }} workouts
-            <template v-if="nextRank"> · {{ nextRank.min - user.stats.workouts }} to {{ nextRank.label }}</template>
+          <span class="rank__label">{{ rank.label }} {{ rank.division }}</span>
+          <span v-if="rank.placement" class="rank__sub">
+            {{ rank.placement.done }}/{{ rank.placement.required }} sessions to get placed
           </span>
+          <span v-else class="rank__sub">
+            {{ rank.dots }} DOTS · {{ rank.total }}kg total
+            <template v-if="rank.next"> · {{ rank.toNext }} to {{ rank.next.label }}</template>
+          </span>
+          <div v-if="!rank.placement" class="rank__lp" :title="`${rank.lp} / 100 to the next division`">
+            <div class="rank__lp-fill" :style="{ width: `${rank.lp}%` }" />
+          </div>
         </div>
         <div class="rank__tiers">
           <span
-            v-for="r in RANKS"
+            v-for="r in TIERS"
             :key="r.id"
             class="rank__pip"
             :style="{ background: r.id === rank.id ? rank.color : 'var(--color-surface-2)', border: `1px solid ${r.id === rank.id ? rank.color : 'var(--color-border)'}` }"
@@ -379,6 +386,13 @@ function saveProfile() {
   color: var(--rank-color);
 }
 .rank__sub { font-size: var(--fs-xs); color: var(--color-text-dim); }
+.rank__lp {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+.rank__lp-fill { height: 100%; background: var(--rank-color); border-radius: inherit; }
 .rank__tiers {
   display: flex;
   gap: 4px;

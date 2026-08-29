@@ -3,10 +3,12 @@ import { ref, computed } from 'vue'
 import Card from '@/components/Card.vue'
 import Avatar from '@/components/Avatar.vue'
 import Chip from '@/components/Chip.vue'
-import { RANKS, getUserRank } from '@/mock/user'
+import RankInfo from '@/components/RankInfo.vue'
+import { TIERS, tierFromDots, needsReview } from '@/ranking'
 import { friendsBoard, globalBoard, POINTS_FORMULA } from '@/mock/leaderboard'
 
 const tab = ref('friends')
+const infoOpen = ref(false)
 
 const rows = computed(() => (tab.value === 'friends' ? friendsBoard : globalBoard.top))
 const podium = computed(() => rows.value.slice(0, 3))
@@ -15,7 +17,7 @@ const rest = computed(() => rows.value.slice(3))
 const MEDALS = ['🥇', '🥈', '🥉']
 
 function tier(u) {
-  return getUserRank(u.workouts)
+  return tierFromDots(u.dots)
 }
 </script>
 
@@ -24,7 +26,7 @@ function tier(u) {
     <div class="ranking__tabs">
       <Chip :active="tab === 'friends'" @click="tab = 'friends'">👥 Friends</Chip>
       <Chip :active="tab === 'global'" @click="tab = 'global'">🌍 Global</Chip>
-      <span class="ranking__sub">Monthly · resets in 13 days</span>
+      <span class="ranking__sub">All-time · never resets</span>
     </div>
 
     <!-- Podium -->
@@ -44,7 +46,9 @@ function tier(u) {
         />
         <span class="podium__name">{{ u.me ? 'You' : u.name.split(' ')[0] }}</span>
         <span class="podium__points">{{ u.points.toLocaleString() }} pts</span>
-        <span class="podium__tier" :title="tier(u).label">{{ tier(u).icon }} {{ tier(u).label }}</span>
+        <span class="podium__tier" :title="`${tier(u).label} ${tier(u).division} · ${tier(u).dots} DOTS`">
+          {{ tier(u).icon }} {{ tier(u).label }} {{ tier(u).division }}
+        </span>
       </div>
     </Card>
 
@@ -61,7 +65,7 @@ function tier(u) {
         <div class="board__who">
           <span class="board__name">
             {{ u.me ? 'You' : u.name }}
-            <span class="board__tier" :title="`${tier(u).label} · ${u.workouts} workouts`">{{ tier(u).icon }}</span>
+            <span class="board__tier" :title="`${tier(u).label} ${tier(u).division} · ${tier(u).dots} DOTS`">{{ tier(u).icon }}</span>
           </span>
           <span class="board__meta">@{{ u.username }} · 🔥 {{ u.streak }}d</span>
         </div>
@@ -78,7 +82,7 @@ function tier(u) {
           <span class="board__pos">{{ globalBoard.me.rank.toLocaleString() }}</span>
           <Avatar :src="globalBoard.me.avatar" alt="You" size="sm" />
           <div class="board__who">
-            <span class="board__name">You <span class="board__tier">{{ tier(globalBoard.me).icon }}</span></span>
+            <span class="board__name">You <span class="board__tier" :title="`${tier(globalBoard.me).label} ${tier(globalBoard.me).division}`">{{ tier(globalBoard.me).icon }}</span></span>
             <span class="board__meta">top {{ Math.ceil((globalBoard.me.rank / globalBoard.totalAthletes) * 100) }}% of {{ globalBoard.totalAthletes.toLocaleString() }} athletes</span>
           </div>
           <span class="board__delta board__delta--up">▲{{ globalBoard.me.delta }}</span>
@@ -89,17 +93,27 @@ function tier(u) {
 
     <!-- Tiers -->
     <Card padding="md" class="tiers">
-      <span class="tiers__title">Tiers · lifetime workouts</span>
+      <div class="tiers__head">
+        <span class="tiers__title">Tiers · strength score</span>
+        <button type="button" class="tiers__how" @click="infoOpen = true">How ranks work ›</button>
+      </div>
       <div class="tiers__list">
-        <div v-for="r in RANKS" :key="r.id" class="tiers__item" :style="{ '--tier-color': r.color }">
+        <div v-for="r in TIERS" :key="r.id" class="tiers__item" :style="{ '--tier-color': r.color }">
           <span class="tiers__icon">{{ r.icon }}</span>
           <span class="tiers__label">{{ r.label }}</span>
+          <span v-if="needsReview(r.id)" class="tiers__review" title="Lifts reviewed by the community">🎥</span>
           <span class="tiers__min">{{ r.min }}+</span>
         </div>
       </div>
     </Card>
 
     <p class="ranking__formula">{{ POINTS_FORMULA }}</p>
+    <p class="ranking__formula">
+      Tier = best push + pull + legs 1RM, scaled to bodyweight &amp; sex (DOTS) ·
+      🎥 from Diamond up, lifts are community-reviewed
+    </p>
+
+    <RankInfo :open="infoOpen" @close="infoOpen = false" />
   </div>
 </template>
 
@@ -197,6 +211,19 @@ function tier(u) {
 
 /* Tiers */
 .tiers { display: flex; flex-direction: column; gap: var(--space-3); }
+.tiers__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.tiers__how {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+.tiers__how:hover { text-decoration: underline; }
+.tiers__review { font-size: 0.7rem; }
 .tiers__title {
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
