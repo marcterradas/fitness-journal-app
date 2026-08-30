@@ -164,14 +164,6 @@ export const stories = [
   },
 ];
 
-export const achievements = [
-  { id: 'a1', title: '7-day streak', earned: true, icon: '🔥', date: 'Apr 23' },
-  { id: 'a2', title: '100kg bench', earned: true, icon: '🏋️', date: 'Apr 30' },
-  { id: 'a3', title: 'Sub-50 10k', earned: true, icon: '🏃', date: 'May 1' },
-  { id: 'a4', title: '50 workouts', earned: true, icon: '✅', date: 'Mar 14' },
-  { id: 'a5', title: '30-day streak', earned: false, icon: '🌟', date: null },
-  { id: 'a6', title: 'Marathon', earned: false, icon: '🥇', date: null },
-];
 
 export const userPosts = [
   {

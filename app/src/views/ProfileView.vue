@@ -11,7 +11,11 @@ import TrainingSummary from '@/components/TrainingSummary.vue'
 import { currentUser, SEXES, bmi, bmiLabel, ageFrom } from '@/mock/user'
 import { TIERS, rankFromSets } from '@/ranking'
 import { SPORT_TYPES } from '@/mock/workouts'
-import { userPosts, achievements } from '@/mock/social'
+import { userPosts } from '@/mock/social'
+import { journalEntries } from '@/mock/workouts'
+import { achievementStats, achievementsFrom } from '@/achievements'
+import { reviewedCount } from '@/reviews'
+import AchievementTile from '@/components/AchievementTile.vue'
 
 const router = useRouter()
 
@@ -22,7 +26,27 @@ const user = reactive(currentUser)
 const rank = computed(() => rankFromSets(user.bestSets, { bodyweightKg: user.weightKg, sex: user.sex }))
 
 const tab = ref('posts')
-const earned = computed(() => achievements.filter(a => a.earned).length)
+
+// Achievements read live stats — editing weight or logging a lift moves them, nothing is stored.
+const achievements = computed(() => achievementsFrom(achievementStats({
+  user, entries: journalEntries, reviewed: reviewedCount.value, dots: rank.value.dots,
+})))
+// A ladder can be cleared many times over, so progress counts rungs, not achievements.
+const rungs = computed(() => achievements.value.reduce(
+  (a, x) => ({ done: a.done + x.level, total: a.total + x.levels }), { done: 0, total: 0 }))
+// Closest to unlocking: what to chase next.
+const nextUp = computed(() =>
+  achievements.value.filter(a => !a.done).sort((x, y) => y.progress - x.progress)[0]
+)
+// Hardest-earned few, shown in the hero.
+const highlights = computed(() =>
+  [...achievements.value].filter(a => a.earned).sort((a, b) => b.level - a.level || b.progress - a.progress).slice(0, 3)
+)
+const achFilter = ref('all')
+const achShown = computed(() => achievements.value.filter(a =>
+  achFilter.value === 'earned' ? a.earned : achFilter.value === 'locked' ? !a.done : true
+))
+const groups = computed(() => [...new Set(achShown.value.map(a => a.group))])
 
 const age = computed(() => ageFrom(user.birthDate))
 const bmiValue = computed(() => bmi(user.weightKg, user.heightCm))
@@ -100,6 +124,22 @@ function saveProfile() {
         <router-link to="/ranking" class="rank__link">Leaderboard ›</router-link>
       </div>
 
+      <!-- Achievement highlights, so awards read without switching tabs -->
+      <button type="button" class="highlights" @click="tab = 'awards'">
+        <span class="highlights__head">
+          <span class="highlights__title">Achievements</span>
+          <span class="highlights__count">{{ rungs.done }} of {{ rungs.total }} tiers ›</span>
+        </span>
+        <span class="highlights__row">
+          <span v-for="a in highlights" :key="a.id" class="highlights__chip" :title="`Tier ${a.level}/${a.levels}`">
+            {{ a.icon }} {{ a.earnedLabel }}
+          </span>
+          <span v-if="nextUp" class="highlights__chip highlights__chip--next">
+            🔜 {{ nextUp.label }} · {{ Math.round(nextUp.progress * 100) }}%
+          </span>
+        </span>
+      </button>
+
       <div class="hero__stats">
         <Stat icon="✅" :value="user.stats.workouts" label="workouts" />
         <Stat icon="👥" :value="user.stats.followers" label="followers" />
@@ -114,7 +154,7 @@ function saveProfile() {
         v-for="t in [
           { id: 'posts', label: `Posts · ${userPosts.length}` },
           { id: 'stats', label: 'Stats' },
-          { id: 'awards', label: `Awards · ${earned}` },
+          { id: 'awards', label: `Awards · ${rungs.done}` },
         ]"
         :key="t.id"
         type="button"
@@ -171,22 +211,31 @@ function saveProfile() {
     </template>
 
     <!-- Awards -->
-    <section v-else>
+    <section v-else class="awards">
       <div class="ach__head">
         <h3 class="section-h" style="margin:0">Achievements</h3>
-        <span class="ach__count">{{ earned }} of {{ achievements.length }} earned</span>
+        <span class="ach__count">{{ rungs.done }} of {{ rungs.total }} tiers cleared</span>
       </div>
-      <div class="achievements">
-        <div
-          v-for="a in achievements"
-          :key="a.id"
-          class="ach"
-          :class="{ 'ach--locked': !a.earned }"
-          :title="a.earned ? `Earned ${a.date}` : 'Not earned yet'"
-        >
-          <span class="ach__icon">{{ a.earned ? a.icon : '🔒' }}</span>
-          <span class="ach__title">{{ a.title }}</span>
-          <span class="ach__date">{{ a.earned ? a.date : '—' }}</span>
+
+      <Card v-if="nextUp" padding="md" class="next">
+        <span class="next__icon">{{ nextUp.icon }}</span>
+        <div class="next__main">
+          <span class="next__label">Next up · {{ nextUp.label }}</span>
+          <div class="next__track"><div class="next__bar" :style="{ width: nextUp.progress * 100 + '%' }" /></div>
+        </div>
+        <span class="next__meta">{{ nextUp.valueLabel }}</span>
+      </Card>
+
+      <div class="ach__filters">
+        <Chip :active="achFilter === 'all'" size="sm" @click="achFilter = 'all'">All</Chip>
+        <Chip :active="achFilter === 'earned'" size="sm" @click="achFilter = 'earned'">Earned</Chip>
+        <Chip :active="achFilter === 'locked'" size="sm" @click="achFilter = 'locked'">In progress</Chip>
+      </div>
+
+      <div v-for="g in groups" :key="g" class="ach__group">
+        <h4 class="ach__grouph">{{ g }}</h4>
+        <div class="achievements">
+          <AchievementTile v-for="a in achShown.filter(a => a.group === g)" :key="a.id" :a="a" />
         </div>
       </div>
     </section>
@@ -452,21 +501,60 @@ function saveProfile() {
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: var(--space-2);
 }
-.ach {
+.highlights {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-3);
   padding: var(--space-3);
-  background: var(--color-surface);
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  text-align: center;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.ach--locked { opacity: 0.45; }
-.ach__icon { font-size: 1.5rem; }
-.ach__title { font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
-.ach__date { font-size: 0.65rem; color: var(--color-text-dim); }
+.highlights:hover { border-color: var(--color-accent); }
+.highlights__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.highlights__title {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-dim);
+}
+.highlights__count { font-size: var(--fs-xs); color: var(--color-accent); }
+.highlights__row { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.highlights__chip {
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 0.65rem;
+  font-weight: var(--fw-semibold);
+}
+.highlights__chip--next { background: var(--color-surface); color: var(--color-text-dim); }
+
+.awards { display: flex; flex-direction: column; gap: var(--space-4); }
+.ach__filters { display: flex; gap: var(--space-2); }
+.ach__group { display: flex; flex-direction: column; gap: var(--space-2); }
+.ach__grouph {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-dim);
+}
+
+.next { display: flex; align-items: center; gap: var(--space-3); }
+.next__icon { font-size: 1.5rem; }
+.next__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.next__label { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
+.next__track { height: 4px; border-radius: 999px; background: var(--color-surface-2); overflow: hidden; }
+.next__bar { height: 100%; background: var(--color-accent); border-radius: inherit; }
+.next__meta { font-size: var(--fs-xs); color: var(--color-text-dim); font-variant-numeric: tabular-nums; }
 
 /* Body & training */
 .body {

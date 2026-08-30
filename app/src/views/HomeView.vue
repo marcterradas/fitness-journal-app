@@ -10,6 +10,7 @@ import ReviewCard from '@/components/ReviewCard.vue'
 import { feedPosts, stories, challenges, motivationalQuotes } from '@/mock/social'
 import { currentUser } from '@/mock/user'
 import { weeklyProgress } from '@/mock/workouts'
+import { followedReviews, pendingReviews, reviewedCount, reviewerBadge } from '@/reviews'
 
 const { weeklyDone, weeklyGoal, streakDays, minutesThisWeek } = currentUser.stats
 const quote = motivationalQuotes[new Date().getDate() % motivationalQuotes.length]
@@ -57,7 +58,13 @@ const openStory = ref(null)
 
     <div class="home__body">
       <section class="home__feed">
-        <ReviewCard />
+        <!-- Only lifts from high-tier athletes you follow interrupt the feed; the rest live in Explore. -->
+        <ReviewCard
+          v-for="s in followedReviews"
+          :key="s.id"
+          :sub="s"
+          :reason="`You follow ${s.athlete.name} — their lift needs verifying`"
+        />
         <Post v-for="p in feedPosts" :key="p.id" :post="p" />
       </section>
 
@@ -77,6 +84,27 @@ const openStory = ref(null)
               <span class="chal__sub">{{ Math.round(c.progress * 100) }}% · {{ c.daysLeft }}d left · {{ c.members.toLocaleString() }} in</span>
             </div>
           </div>
+        </Card>
+
+        <Card padding="md" class="rvr">
+          <div class="aside-head">
+            <h3 class="aside-title">Your reviews</h3>
+            <router-link to="/search?tab=review" class="aside-link">Review queue ›</router-link>
+          </div>
+          <div class="rvr__top">
+            <span class="rvr__icon">{{ reviewerBadge.earned?.icon ?? '🔍' }}</span>
+            <div class="rvr__main">
+              <span class="rvr__label">{{ reviewerBadge.earned?.label ?? 'Not a reviewer yet' }}</span>
+              <span class="rvr__sub">{{ reviewedCount.toLocaleString() }} lifts reviewed</span>
+            </div>
+          </div>
+          <div v-if="reviewerBadge.next" class="rvr__next">
+            <div class="chal__track"><div class="chal__bar" :style="{ width: reviewerBadge.progress * 100 + '%' }" /></div>
+            <span class="chal__sub">{{ reviewerBadge.toNext }} more to {{ reviewerBadge.next.icon }} {{ reviewerBadge.next.label }}</span>
+          </div>
+          <router-link v-if="pendingReviews.length" to="/search?tab=review" class="rvr__cta">
+            {{ pendingReviews.length }} lift{{ pendingReviews.length === 1 ? '' : 's' }} waiting on votes →
+          </router-link>
         </Card>
 
         <FollowSuggestionsForYou />
@@ -176,6 +204,18 @@ const openStory = ref(null)
 .wday__dot--done { border-color: transparent; }
 .wday__l { font-size: 0.65rem; color: var(--color-text-dim); }
 .week__meta { font-size: var(--fs-xs); color: var(--color-text-muted); }
+
+/* Reviewer contribution */
+.rvr .aside-head { margin-bottom: 0; }
+.rvr { display: flex; flex-direction: column; gap: var(--space-3); }
+.rvr__top { display: flex; align-items: center; gap: var(--space-3); }
+.rvr__icon { font-size: 1.5rem; }
+.rvr__main { display: flex; flex-direction: column; }
+.rvr__label { font-size: var(--fs-sm); font-weight: var(--fw-semibold); }
+.rvr__sub { font-size: var(--fs-xs); color: var(--color-text-dim); }
+.rvr__next { display: flex; flex-direction: column; gap: 4px; }
+.rvr__cta { font-size: var(--fs-xs); color: var(--color-accent); text-decoration: none; }
+.rvr__cta:hover { text-decoration: underline; }
 
 /* Challenges */
 .chal__row {

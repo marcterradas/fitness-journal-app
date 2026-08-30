@@ -31,15 +31,72 @@ export const globalBoard = {
   me: { rank: 1483, id: 'u_marc', name: 'Marc Terradas', username: 'marc_fitness', avatar: 'https://i.pravatar.cc/300?u=marc', dots: 282, workouts: 142, points: 1105, streak: 18, delta: 127, me: true },
 }
 
-// One lift waiting on community review — Diamond and above must be verified before it scores.
-export const reviewSubmission = {
-  id: 'rv1',
-  athlete: { id: 'g3', name: 'Derek Ncube', username: 'derek_lifts', avatar: 'https://i.pravatar.cc/150?u=derek', dots: 641, bodyweightKg: 93 },
-  exercise: 'Deadlift',
-  weightKg: 300,
-  reps: 1,
-  pattern: 'legs',
-  submittedAgo: '4h ago',
-  videoSeconds: 22,
-  votes: { valid: 47, invalid: 3, needed: 60 },
+// Diamond+ lifts wait on community review before they score. `followed` = the current user follows them,
+// so it surfaces in the Home feed too; everything else only lives in the Explore review queue.
+export const reviewQueue = [
+  {
+    id: 'rv1',
+    athlete: { id: 'g3', name: 'Derek Ncube', username: 'derek_lifts', avatar: 'https://i.pravatar.cc/150?u=derek', dots: 641, bodyweightKg: 93, followed: true },
+    exercise: 'Deadlift',
+    weightKg: 300,
+    reps: 1,
+    pattern: 'legs',
+    submittedAgo: '4h ago',
+    videoSeconds: 22,
+    votes: { valid: 47, invalid: 3, needed: 60 },
+  },
+  {
+    id: 'rv2',
+    athlete: { id: 'u6', name: 'Lucas Kim', username: 'lucas_lifts', avatar: 'https://i.pravatar.cc/150?u=lucas', dots: 465, bodyweightKg: 78, followed: true },
+    exercise: 'Bench Press',
+    weightKg: 165,
+    reps: 2,
+    pattern: 'push',
+    submittedAgo: '11h ago',
+    videoSeconds: 18,
+    votes: { valid: 12, invalid: 9, needed: 60 },
+  },
+  {
+    id: 'rv3',
+    athlete: { id: 'g1', name: 'Kenji Watanabe', username: 'kenji_ultra', avatar: 'https://i.pravatar.cc/150?u=kenji', dots: 612, bodyweightKg: 71, followed: false },
+    exercise: 'Weighted Pull Up',
+    weightKg: 65,
+    reps: 3,
+    pattern: 'pull',
+    submittedAgo: '1d ago',
+    videoSeconds: 31,
+    votes: { valid: 58, invalid: 1, needed: 60 },
+  },
+  {
+    id: 'rv4',
+    athlete: { id: 'g2', name: 'Sofia Almeida', username: 'sofia_tri', avatar: 'https://i.pravatar.cc/150?u=sofia', dots: 588, bodyweightKg: 62, followed: false },
+    exercise: 'Squat',
+    weightKg: 180,
+    reps: 1,
+    pattern: 'legs',
+    submittedAgo: '1d ago',
+    videoSeconds: 26,
+    votes: { valid: 5, invalid: 0, needed: 60 },
+  },
+  {
+    id: 'rv5',
+    athlete: { id: 'g7', name: 'Tom Becker', username: 'tom_ironman', avatar: 'https://i.pravatar.cc/150?u=tom', dots: 512, bodyweightKg: 84, followed: false },
+    exercise: 'Overhead Press',
+    weightKg: 105,
+    reps: 1,
+    pattern: 'push',
+    submittedAgo: '2d ago',
+    videoSeconds: 15,
+    votes: { valid: 31, invalid: 22, needed: 60 },
+  },
+]
+
+// Lifetime contribution of the current user as a reviewer. Server-side later.
+export const reviewerStats = {
+  reviewed: 947,
+  approved: 812,
+  denied: 135,
+  agreementRate: 0.94, // share of votes that matched the final community verdict
+  rank: 168,           // position among all reviewers
+  totalReviewers: 12480,
 }

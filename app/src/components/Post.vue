@@ -4,6 +4,7 @@ import Card from '@/components/Card.vue'
 import Avatar from '@/components/Avatar.vue'
 import Badge from '@/components/Badge.vue'
 import SportIcon from '@/components/SportIcon.vue'
+import UserHoverCard from '@/components/UserHoverCard.vue'
 
 const props = defineProps({
   post: { type: Object, required: true },
@@ -124,10 +125,14 @@ function goToMedia(i) {
 <template>
   <Card padding="none" class="post">
     <header class="post__head">
-      <Avatar :src="post.user.avatar" :alt="post.user.name" size="md" />
+      <UserHoverCard :user="post.user">
+        <Avatar :src="post.user.avatar" :alt="post.user.name" size="md" />
+      </UserHoverCard>
       <div class="post__who">
         <div class="post__row">
-          <span class="post__name">{{ post.user.name }}</span>
+          <UserHoverCard :user="post.user">
+            <span class="post__name" tabindex="0">{{ post.user.name }}</span>
+          </UserHoverCard>
           <span class="post__when">· {{ post.when }}</span>
         </div>
         <div class="post__row post__row--sub">

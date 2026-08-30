@@ -4,6 +4,7 @@ import Card from '@/components/Card.vue'
 import Avatar from '@/components/Avatar.vue'
 import Chip from '@/components/Chip.vue'
 import RankInfo from '@/components/RankInfo.vue'
+import UserHoverCard from '@/components/UserHoverCard.vue'
 import { TIERS, tierFromDots, needsReview } from '@/ranking'
 import { friendsBoard, globalBoard, POINTS_FORMULA } from '@/mock/leaderboard'
 
@@ -38,12 +39,14 @@ function tier(u) {
         :class="{ 'podium__spot--first': u === podium[0], 'podium__spot--me': u.me }"
       >
         <span class="podium__medal">{{ MEDALS[podium.indexOf(u)] }}</span>
-        <Avatar
-          :src="u.avatar"
-          :alt="u.name"
-          :size="u === podium[0] ? 'xl' : 'lg'"
-          :ring="u === podium[0] ? 'accent' : undefined"
-        />
+        <UserHoverCard :user="u">
+          <Avatar
+            :src="u.avatar"
+            :alt="u.name"
+            :size="u === podium[0] ? 'xl' : 'lg'"
+            :ring="u === podium[0] ? 'accent' : undefined"
+          />
+        </UserHoverCard>
         <span class="podium__name">{{ u.me ? 'You' : u.name.split(' ')[0] }}</span>
         <span class="podium__points">{{ u.points.toLocaleString() }} pts</span>
         <span class="podium__tier" :title="`${tier(u).label} ${tier(u).division} · ${tier(u).dots} DOTS`">
@@ -61,9 +64,11 @@ function tier(u) {
         :class="{ 'board__row--me': u.me }"
       >
         <span class="board__pos">{{ i + 4 }}</span>
-        <Avatar :src="u.avatar" :alt="u.name" size="sm" />
+        <UserHoverCard :user="u">
+          <Avatar :src="u.avatar" :alt="u.name" size="sm" />
+        </UserHoverCard>
         <div class="board__who">
-          <span class="board__name">
+          <span class="board__name" tabindex="0">
             {{ u.me ? 'You' : u.name }}
             <span class="board__tier" :title="`${tier(u).label} ${tier(u).division} · ${tier(u).dots} DOTS`">{{ tier(u).icon }}</span>
           </span>

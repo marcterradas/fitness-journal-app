@@ -7,16 +7,21 @@ import Avatar from '@/components/Avatar.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import SportIcon from '@/components/SportIcon.vue'
 import Leaderboard from '@/components/Leaderboard.vue'
+import ReviewQueue from '@/components/ReviewQueue.vue'
+import UserHoverCard from '@/components/UserHoverCard.vue'
 
 import { friends } from '@/mock/user'
 import { tierFromDots } from '@/ranking'
 import { exercises, workoutPlans } from '@/mock/exercises'
 import { challenges, feedPosts } from '@/mock/social'
 import { friendsBoard, globalBoard } from '@/mock/leaderboard'
+import { pendingReviews } from '@/reviews'
 
 const route = useRoute()
 const query = ref('')
-const tab = ref(route.query.tab === 'ranking' ? 'ranking' : 'all')
+// ponytail: only the non-search tabs are deep-linkable; ?tab=anything-else falls back to 'all'
+const PANELS = ['ranking', 'review']
+const tab = ref(PANELS.includes(route.query.tab) ? route.query.tab : 'all')
 
 const tabs = [
   { id: 'all', label: 'All', icon: '✨' },
@@ -26,6 +31,7 @@ const tabs = [
   { id: 'challenges', label: 'Challenges', icon: '🎯' },
   { id: 'posts', label: 'Posts', icon: '📝' },
   { id: 'ranking', label: 'Ranking', icon: '🏆' },
+  { id: 'review', label: 'Review', icon: '🎥' },
 ]
 
 const trending = ['#PullUpProgress', '#April30Mobility', '#Sub50_10k', '#PostureFix', '#ZeroSugarApril']
@@ -123,7 +129,7 @@ function openTab(id) {
 }
 
 function onType() {
-  if (tab.value === 'ranking') tab.value = 'all'
+  if (PANELS.includes(tab.value)) tab.value = 'all'
 }
 </script>
 
@@ -131,7 +137,7 @@ function onType() {
   <div class="search">
     <header class="search__head">
       <h1 class="search__title">Explore</h1>
-      <p class="search__sub">Athletes, workouts, challenges and the all-time ranking.</p>
+      <p class="search__sub">Athletes, workouts, challenges, the all-time ranking and the lift review queue.</p>
     </header>
 
     <div class="search__bar">
@@ -148,11 +154,13 @@ function onType() {
 
     <div class="search__tabs hide-scrollbar">
       <Chip v-for="t in tabs" :key="t.id" :active="tab === t.id" @click="openTab(t.id)">
-        {{ t.icon }} {{ t.label }}
+        {{ t.icon }} {{ t.label }}<span v-if="t.id === 'review' && pendingReviews.length" class="search__pill">{{ pendingReviews.length }}</span>
       </Chip>
     </div>
 
     <Leaderboard v-if="tab === 'ranking'" />
+
+    <ReviewQueue v-else-if="tab === 'review'" />
 
     <template v-else-if="isDiscover || totalHits">
       <!-- Discover header blocks -->
@@ -164,6 +172,23 @@ function onType() {
           </div>
         </section>
 
+        <section v-if="pendingReviews.length" class="block">
+          <div class="block__head">
+            <h3 class="block__h">Waiting on the community</h3>
+            <button class="block__more" @click="openTab('review')">Review queue →</button>
+          </div>
+          <Card padding="md" class="verify" @click="openTab('review')">
+            <span class="verify__icon">🎥</span>
+            <div class="verify__main">
+              <span class="verify__title">{{ pendingReviews.length }} high-tier lift{{ pendingReviews.length === 1 ? '' : 's' }} need verifying</span>
+              <span class="verify__sub">Vote on the videos — every review counts toward your reviewer badge.</span>
+            </div>
+            <div class="verify__faces">
+              <Avatar v-for="s in pendingReviews.slice(0, 3)" :key="s.id" :src="s.athlete.avatar" :alt="s.athlete.name" size="sm" />
+            </div>
+          </Card>
+        </section>
+
         <section class="block">
           <div class="block__head">
             <h3 class="block__h">Top this month</h3>
@@ -172,8 +197,12 @@ function onType() {
           <Card padding="none">
             <div v-for="(u, i) in topThree" :key="u.id" class="lead" :class="{ 'lead--me': u.me }">
               <span class="lead__medal">{{ MEDALS[i] }}</span>
-              <Avatar :src="u.avatar" :alt="u.name" size="sm" />
-              <span class="lead__name">{{ u.me ? 'You' : u.name }}</span>
+              <UserHoverCard :user="u">
+                <Avatar :src="u.avatar" :alt="u.name" size="sm" />
+              </UserHoverCard>
+              <UserHoverCard :user="u" class="lead__who">
+                <span class="lead__name" tabindex="0">{{ u.me ? 'You' : u.name }}</span>
+              </UserHoverCard>
               <span class="lead__tier" :title="`${tierFromDots(u.dots).label} ${tierFromDots(u.dots).division}`">{{ tierFromDots(u.dots).icon }}</span>
               <span class="lead__pts">{{ u.points.toLocaleString() }} pts</span>
             </div>
@@ -197,7 +226,10 @@ function onType() {
         </div>
         <div class="results">
           <Card v-for="i in s.hits" :key="i.id" padding="md" class="row">
-            <Avatar v-if="i.avatar" :src="i.avatar" :alt="i.title" size="md" />
+            <UserHoverCard v-if="i.avatar && s.group.id === 'people'" :user="i.id">
+              <Avatar :src="i.avatar" :alt="i.title" size="md" />
+            </UserHoverCard>
+            <Avatar v-else-if="i.avatar" :src="i.avatar" :alt="i.title" size="md" />
             <SportIcon v-else-if="i.sport" :sport="i.sport" size="md" />
             <span v-else class="row__emoji">{{ i.emoji }}</span>
             <div class="row__main">
@@ -266,6 +298,24 @@ function onType() {
 }
 .search__tabs { display: flex; gap: var(--space-2); overflow-x: auto; }
 .search__count { font-size: var(--fs-sm); color: var(--color-text-muted); }
+.search__pill {
+  margin-left: var(--space-1);
+  padding: 0 0.35rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: 0.65rem;
+  font-weight: var(--fw-bold);
+}
+
+/* Review teaser */
+.verify { display: flex; align-items: center; gap: var(--space-3); cursor: pointer; }
+.verify__icon { font-size: 1.5rem; }
+.verify__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.verify__title { font-weight: var(--fw-semibold); font-size: var(--fs-sm); }
+.verify__sub { font-size: var(--fs-xs); color: var(--color-text-dim); }
+.verify__faces { display: flex; }
+.verify__faces > * + * { margin-left: -8px; }
 
 /* Sections */
 .block { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -299,7 +349,8 @@ function onType() {
 }
 .lead--me { background: var(--color-accent-soft); }
 .lead__medal { font-size: var(--fs-md); }
-.lead__name { flex: 1; min-width: 0; font-weight: var(--fw-medium); color: var(--color-text); }
+.lead__name { font-weight: var(--fw-medium); color: var(--color-text); }
+.lead__who { flex: 1; min-width: 0; }
 .lead__tier { font-size: var(--fs-sm); }
 .lead__pts { font-size: var(--fs-xs); color: var(--color-text-dim); font-variant-numeric: tabular-nums; }
 .lead--foot {

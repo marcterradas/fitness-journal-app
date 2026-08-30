@@ -1,21 +1,21 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import Card from '@/components/Card.vue'
 import Avatar from '@/components/Avatar.vue'
 import Button from '@/components/Button.vue'
-import { reviewSubmission as sub } from '@/mock/leaderboard'
+import UserHoverCard from '@/components/UserHoverCard.vue'
 import { tierFromDots } from '@/ranking'
+import { myVote, tallyOf, vote } from '@/reviews'
 
-const tier = tierFromDots(sub.athlete.dots)
-const vote = ref(null) // null | 'valid' | 'invalid'
+const props = defineProps({
+  sub: { type: Object, required: true },
+  // Home shows it because you follow the athlete; Explore shows the whole queue.
+  reason: { type: String, default: '' },
+})
 
-const tally = computed(() => ({
-  valid: sub.votes.valid + (vote.value === 'valid' ? 1 : 0),
-  invalid: sub.votes.invalid + (vote.value === 'invalid' ? 1 : 0),
-}))
-const progress = computed(() =>
-  Math.min(1, (tally.value.valid + tally.value.invalid) / sub.votes.needed)
-)
+const tier = computed(() => tierFromDots(props.sub.athlete.dots))
+const cast = computed(() => myVote(props.sub.id))
+const tally = computed(() => tallyOf(props.sub))
 </script>
 
 <template>
@@ -25,10 +25,16 @@ const progress = computed(() =>
       <span class="rev__ago">{{ sub.submittedAgo }}</span>
     </header>
 
+    <p v-if="reason" class="rev__reason">{{ reason }}</p>
+
     <div class="rev__who">
-      <Avatar :src="sub.athlete.avatar" :alt="sub.athlete.name" size="md" ring="accent" />
+      <UserHoverCard :user="sub.athlete">
+        <Avatar :src="sub.athlete.avatar" :alt="sub.athlete.name" size="md" ring="accent" />
+      </UserHoverCard>
       <div class="rev__id">
-        <span class="rev__name">{{ sub.athlete.name }}</span>
+        <UserHoverCard :user="sub.athlete">
+          <span class="rev__name" tabindex="0">{{ sub.athlete.name }}</span>
+        </UserHoverCard>
         <span class="rev__tier">{{ tier.icon }} {{ tier.label }} {{ tier.division }} · {{ tier.dots }} DOTS</span>
       </div>
     </div>
@@ -44,24 +50,24 @@ const progress = computed(() =>
     </div>
 
     <p class="rev__ask">
-      Full lift, plates visible, no cuts? Your vote decides whether it counts toward his rank.
+      Full lift, plates visible, no cuts? Your vote decides whether it counts toward their rank.
     </p>
 
     <div class="rev__actions">
-      <Button variant="primary" size="sm" :disabled="vote !== null" @click="vote = 'valid'">👍 Approve</Button>
-      <Button variant="danger" size="sm" :disabled="vote !== null" @click="vote = 'invalid'">👎 Deny</Button>
+      <Button variant="primary" size="sm" :disabled="!!cast" @click="vote(sub.id, 'valid')">👍 Approve</Button>
+      <Button variant="danger" size="sm" :disabled="!!cast" @click="vote(sub.id, 'invalid')">👎 Deny</Button>
     </div>
 
     <div class="rev__tally">
-      <div class="rev__track"><div class="rev__bar" :style="{ width: progress * 100 + '%' }" /></div>
+      <div class="rev__track"><div class="rev__bar" :style="{ width: tally.progress * 100 + '%' }" /></div>
       <span class="rev__counts">
         {{ tally.valid }} approve · {{ tally.invalid }} deny ·
-        {{ Math.max(0, sub.votes.needed - tally.valid - tally.invalid) }} votes to close
+        {{ Math.max(0, sub.votes.needed - tally.cast) }} votes to close
       </span>
     </div>
 
-    <p v-if="vote" class="rev__done">
-      {{ vote === 'valid' ? '👍 Approved' : '👎 Denied' }} — vote recorded.
+    <p v-if="cast" class="rev__done">
+      {{ cast === 'valid' ? '👍 Approved' : '👎 Denied' }} — vote recorded, +1 review.
     </p>
   </Card>
 </template>
@@ -78,6 +84,7 @@ const progress = computed(() =>
   color: var(--tier-color);
 }
 .rev__ago { font-size: var(--fs-xs); color: var(--color-text-dim); }
+.rev__reason { margin: 0; font-size: var(--fs-xs); color: var(--color-text-dim); }
 
 .rev__who { display: flex; align-items: center; gap: var(--space-3); }
 .rev__id { display: flex; flex-direction: column; }
