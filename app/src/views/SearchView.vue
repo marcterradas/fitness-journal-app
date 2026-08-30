@@ -9,10 +9,11 @@ import SportIcon from '@/components/SportIcon.vue'
 import Leaderboard from '@/components/Leaderboard.vue'
 import ReviewQueue from '@/components/ReviewQueue.vue'
 import UserHoverCard from '@/components/UserHoverCard.vue'
+import ExerciseModal from '@/components/ExerciseModal.vue'
 
 import { friends } from '@/mock/user'
 import { tierFromDots } from '@/ranking'
-import { exercises, workoutPlans } from '@/mock/exercises'
+import { exercises, workoutPlans, EXERCISE_MEDIA_CREDIT } from '@/mock/exercises'
 import { challenges, feedPosts } from '@/mock/social'
 import { friendsBoard, globalBoard } from '@/mock/leaderboard'
 import { pendingReviews } from '@/reviews'
@@ -55,8 +56,8 @@ const SOURCES = [
   {
     id: 'exercises', label: 'Exercises', action: 'Add', done: 'Added',
     items: () => exercises.map(e => ({
-      id: e.id, title: e.name, sub: `${e.muscle} · ${e.equipment}`, emoji: '🏋️',
-      terms: [e.name, e.muscle, e.equipment],
+      id: e.id, title: e.name, sub: `${e.muscle} · ${e.equipment}`, image: e.image, text: e.steps[0], open: e,
+      terms: [e.name, e.muscle, e.equipment, e.bodyPart, ...e.secondary],
     })),
   },
   {
@@ -123,6 +124,9 @@ const sections = computed(() => {
     bare: tab.value !== 'all',
   }))
 })
+
+// Rows that carry an `open` payload get the detail popup; the rest stay plain.
+const openExercise = ref(null)
 
 function openTab(id) {
   tab.value = id
@@ -224,9 +228,21 @@ function onType() {
           <h3 class="block__h">{{ s.label }}</h3>
           <button v-if="s.more" class="block__more" @click="openTab(s.group.id)">See all →</button>
         </div>
+        <p v-if="s.group.id === 'exercises'" class="block__credit">{{ EXERCISE_MEDIA_CREDIT }}</p>
         <div class="results">
-          <Card v-for="i in s.hits" :key="i.id" padding="md" class="row">
-            <UserHoverCard v-if="i.avatar && s.group.id === 'people'" :user="i.id">
+          <Card
+            v-for="i in s.hits"
+            :key="i.id"
+            padding="md"
+            class="row"
+            :class="{ 'row--clickable': i.open }"
+            :tabindex="i.open ? 0 : undefined"
+            :role="i.open ? 'button' : undefined"
+            @click="i.open && (openExercise = i.open)"
+            @keyup.enter="i.open && (openExercise = i.open)"
+          >
+            <img v-if="i.image" :src="i.image" :alt="i.title" class="row__thumb" loading="lazy" width="180" height="180" />
+            <UserHoverCard v-else-if="i.avatar && s.group.id === 'people'" :user="i.id">
               <Avatar :src="i.avatar" :alt="i.title" size="md" />
             </UserHoverCard>
             <Avatar v-else-if="i.avatar" :src="i.avatar" :alt="i.title" size="md" />
@@ -241,7 +257,7 @@ function onType() {
               v-if="s.group.action"
               class="row__btn"
               :class="{ 'row__btn--done': saved.has(key(s.group, i)) }"
-              @click="toggle(s.group, i)"
+              @click.stop="toggle(s.group, i)"
             >{{ saved.has(key(s.group, i)) ? s.group.done : s.group.action }}</button>
           </Card>
         </div>
@@ -254,6 +270,8 @@ function onType() {
       title="Nothing found"
       :description="query ? `No matches for &quot;${query}&quot;.` : 'Try a different filter.'"
     />
+
+    <ExerciseModal :exercise="openExercise" @close="openExercise = null" />
   </div>
 </template>
 
@@ -338,6 +356,17 @@ function onType() {
   flex-shrink: 0;
 }
 .block__chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.block__credit { font-size: 0.65rem; color: var(--color-text-dim); }
+
+/* Dataset thumbnails are 180x180 — never upscale them past that */
+.row__thumb {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--color-surface-2);
+  flex-shrink: 0;
+}
 
 /* Ranking preview */
 .lead {
@@ -364,6 +393,9 @@ function onType() {
 .results { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .row { display: flex; align-items: center; gap: var(--space-3); }
+.row--clickable { cursor: pointer; }
+.row--clickable:hover { border-color: var(--color-border-strong); }
+.row--clickable:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .row__emoji {
   font-size: 1.5rem;
   width: 2.5rem;
