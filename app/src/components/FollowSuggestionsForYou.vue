@@ -1,4 +1,5 @@
 <script setup>
+import UserLink from '@/components/UserLink.vue'
 import { ref } from 'vue'
 import Button from '@/components/Button.vue'
 
@@ -24,8 +25,8 @@ function toggleFollow(user) {
       <div v-for="user in suggestions" :key="user.id" class="suggestion-item">
         <img :src="user.avatar" :alt="user.name" class="suggestion-item__avatar" />
         <div class="suggestion-item__info">
-          <div class="suggestion-item__name">{{ user.name }}</div>
-          <div class="suggestion-item__username">@{{ user.username }}</div>
+          <UserLink :user="user" class="suggestion-item__name">{{ user.name }}</UserLink>
+          <UserLink :user="user" class="suggestion-item__username">@{{ user.username }}</UserLink>
         </div>
         <Button
           :class="['follow-btn', { 'follow-btn--following': user.following }]"

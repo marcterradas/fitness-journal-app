@@ -83,3 +83,14 @@ export const weeklyTemplates = {
   },
   sun: null,
 }
+
+/** Drop a workout into a weekday of the weekly plan, overwriting whatever sat there.
+ *  Fresh ids so editing the copy never writes back into the source. */
+export function saveToDay(dayId, workout) {
+  const stamp = Date.now()
+  weeklyTemplates[dayId] = {
+    ...workout,
+    id: `t_${dayId}_${stamp}`,
+    exercises: workout.exercises.map((e, i) => ({ ...e, id: `ex_${stamp}_${i}` })),
+  }
+}

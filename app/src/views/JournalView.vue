@@ -9,7 +9,9 @@ import Chip from '@/components/Chip.vue'
 import SportIcon from '@/components/SportIcon.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ExerciseProgress from '@/components/ExerciseProgress.vue'
+import UserLink from '@/components/UserLink.vue'
 import { journalEntries, SPORT_TYPES, MOODS, todayWorkout, ymd } from '@/mock/workouts'
+import { savedWorkouts } from '@/mock/saved'
 import { currentUser } from '@/mock/user'
 import { TIERS, rankFromSets } from '@/ranking'
 
@@ -91,6 +93,15 @@ function pickDay(d) {
   }
 }
 
+/* ---- Saved workouts ---- */
+const openSaved = ref(null)
+
+function removeSaved(id) {
+  const i = savedWorkouts.findIndex(w => w.id === id)
+  if (i > -1) savedWorkouts.splice(i, 1)
+  showToast('Removed from saved')
+}
+
 function showToast(msg) {
   toast.value = msg
   setTimeout(() => { toast.value = '' }, 2000)
@@ -152,7 +163,11 @@ function saveEntry() {
     <!-- Tabs -->
     <div class="tabs" role="tablist">
       <button
-        v-for="t in [{ id: 'log', label: 'Log' }, { id: 'progress', label: 'Progress' }]"
+        v-for="t in [
+          { id: 'log', label: 'Log' },
+          { id: 'progress', label: 'Progress' },
+          { id: 'saved', label: `Saved · ${savedWorkouts.length}` },
+        ]"
         :key="t.id"
         type="button"
         role="tab"
@@ -280,7 +295,7 @@ function saveEntry() {
     </Card>
     </template>
 
-    <template v-else>
+    <template v-else-if="tab === 'progress'">
       <!-- Last 30 days -->
       <Card padding="md" class="summary">
         <div class="summary__cell">
@@ -345,6 +360,45 @@ function saveEntry() {
             :title="r.label"
           />
         </div>
+      </Card>
+    </template>
+
+    <!-- Saved workouts -->
+    <template v-else>
+      <EmptyState
+        v-if="!savedWorkouts.length"
+        icon="🔖"
+        title="Nothing saved yet"
+        description="Save a workout from another athlete's profile and it lands here."
+      />
+      <Card v-for="w in savedWorkouts" :key="w.id" padding="md" class="saved">
+        <div class="saved__top">
+          <SportIcon :sport="w.sport" size="md" />
+          <div class="saved__info">
+            <span class="saved__title">{{ w.title }}</span>
+            <span class="saved__meta">
+              {{ w.exercises.length }} exercises · {{ w.durationMin }} min · saved {{ w.savedAt.toLowerCase() }}
+            </span>
+          </div>
+          <button class="saved__start" @click="router.push('/workout')">Start</button>
+        </div>
+
+        <div class="saved__foot">
+          <span class="saved__from">
+            from <UserLink :user="w.from" class="saved__author">{{ w.from.name }}</UserLink>
+          </span>
+          <button class="saved__link" @click="openSaved = openSaved === w.id ? null : w.id">
+            {{ openSaved === w.id ? 'Hide exercises' : 'Show exercises' }}
+          </button>
+          <button class="saved__link saved__link--del" @click="removeSaved(w.id)">Remove</button>
+        </div>
+
+        <ul v-if="openSaved === w.id" class="saved__list">
+          <li v-for="ex in w.exercises" :key="ex.name" class="saved__ex">
+            <span class="saved__ex-name">{{ ex.name }}</span>
+            <span class="saved__ex-sets">{{ ex.sets }} × {{ ex.reps }}</span>
+          </li>
+        </ul>
       </Card>
     </template>
 
@@ -569,6 +623,61 @@ function saveEntry() {
 
 /* Goals */
 .goals { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* Saved workouts */
+.saved { display: flex; flex-direction: column; gap: var(--space-3); }
+.saved__top { display: flex; align-items: center; gap: var(--space-3); }
+.saved__info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.saved__title { font-weight: var(--fw-semibold); color: var(--color-text); }
+.saved__meta { font-size: var(--fs-xs); color: var(--color-text-dim); }
+.saved__start {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent-ink);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.saved__start:hover { background: var(--color-accent-hover); }
+.saved__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--color-text-dim);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+}
+.saved__from { flex: 1; min-width: 0; }
+.saved__author { color: var(--color-text-muted); font-weight: var(--fw-semibold); }
+.saved__link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+.saved__link:hover { text-decoration: underline; }
+.saved__link--del { color: var(--color-danger); }
+.saved__list { display: flex; flex-direction: column; gap: var(--space-1); }
+.saved__ex {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--fs-sm);
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.saved__ex:last-child { border-bottom: none; }
+.saved__ex-name { color: var(--color-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.saved__ex-sets { color: var(--color-text-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .goal__row {
   display: flex;
   justify-content: space-between;

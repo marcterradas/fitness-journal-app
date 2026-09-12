@@ -5,6 +5,7 @@ import Avatar from '@/components/Avatar.vue'
 import Chip from '@/components/Chip.vue'
 import RankInfo from '@/components/RankInfo.vue'
 import UserHoverCard from '@/components/UserHoverCard.vue'
+import UserLink from '@/components/UserLink.vue'
 import { TIERS, tierFromDots, needsReview } from '@/ranking'
 import { friendsBoard, globalBoard, POINTS_FORMULA } from '@/mock/leaderboard'
 
@@ -47,7 +48,7 @@ function tier(u) {
             :ring="u === podium[0] ? 'accent' : undefined"
           />
         </UserHoverCard>
-        <span class="podium__name">{{ u.me ? 'You' : u.name.split(' ')[0] }}</span>
+        <UserLink :user="u" class="podium__name">{{ u.me ? 'You' : u.name.split(' ')[0] }}</UserLink>
         <span class="podium__points">{{ u.points.toLocaleString() }} pts</span>
         <span class="podium__tier" :title="`${tier(u).label} ${tier(u).division} · ${tier(u).dots} DOTS`">
           {{ tier(u).icon }} {{ tier(u).label }} {{ tier(u).division }}
@@ -69,10 +70,10 @@ function tier(u) {
         </UserHoverCard>
         <div class="board__who">
           <span class="board__name" tabindex="0">
-            {{ u.me ? 'You' : u.name }}
+            <UserLink :user="u">{{ u.me ? 'You' : u.name }}</UserLink>
             <span class="board__tier" :title="`${tier(u).label} ${tier(u).division} · ${tier(u).dots} DOTS`">{{ tier(u).icon }}</span>
           </span>
-          <span class="board__meta">@{{ u.username }} · 🔥 {{ u.streak }}d</span>
+          <span class="board__meta"><UserLink :user="u">@{{ u.username }}</UserLink> · 🔥 {{ u.streak }}d</span>
         </div>
         <span
           class="board__delta"

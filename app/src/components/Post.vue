@@ -5,6 +5,7 @@ import Avatar from '@/components/Avatar.vue'
 import Badge from '@/components/Badge.vue'
 import SportIcon from '@/components/SportIcon.vue'
 import UserHoverCard from '@/components/UserHoverCard.vue'
+import UserLink from '@/components/UserLink.vue'
 
 const props = defineProps({
   post: { type: Object, required: true },
@@ -126,17 +127,17 @@ function goToMedia(i) {
   <Card padding="none" class="post">
     <header class="post__head">
       <UserHoverCard :user="post.user">
-        <Avatar :src="post.user.avatar" :alt="post.user.name" size="md" />
+        <UserLink :user="post.user"><Avatar :src="post.user.avatar" :alt="post.user.name" size="md" /></UserLink>
       </UserHoverCard>
       <div class="post__who">
         <div class="post__row">
           <UserHoverCard :user="post.user">
-            <span class="post__name" tabindex="0">{{ post.user.name }}</span>
+            <UserLink :user="post.user" class="post__name">{{ post.user.name }}</UserLink>
           </UserHoverCard>
           <span class="post__when">· {{ post.when }}</span>
         </div>
         <div class="post__row post__row--sub">
-          <span class="post__handle">@{{ post.user.username }}</span>
+          <UserLink :user="post.user" class="post__handle">@{{ post.user.username }}</UserLink>
           <span v-if="post.type === 'workout'" class="post__type-tag">Workout</span>
         </div>
       </div>
@@ -396,7 +397,8 @@ function goToMedia(i) {
 .post__who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .post__row { display: flex; align-items: baseline; gap: var(--space-1); }
 .post__row--sub { align-items: center; }
-.post__name { font-weight: var(--fw-semibold); color: var(--color-text); }
+.post__name { font-weight: var(--fw-semibold); color: var(--color-text); text-decoration: none; }
+.post__name:hover { text-decoration: underline; }
 .post__when { font-size: var(--fs-xs); color: var(--color-text-dim); }
 .post__handle { font-size: var(--fs-xs); color: var(--color-text-dim); }
 .post__type-tag {

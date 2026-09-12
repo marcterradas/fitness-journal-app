@@ -4,6 +4,7 @@ import Card from '@/components/Card.vue'
 import Avatar from '@/components/Avatar.vue'
 import Button from '@/components/Button.vue'
 import UserHoverCard from '@/components/UserHoverCard.vue'
+import UserLink from '@/components/UserLink.vue'
 import { tierFromDots } from '@/ranking'
 import { myVote, tallyOf, vote } from '@/reviews'
 
@@ -33,7 +34,7 @@ const tally = computed(() => tallyOf(props.sub))
       </UserHoverCard>
       <div class="rev__id">
         <UserHoverCard :user="sub.athlete">
-          <span class="rev__name" tabindex="0">{{ sub.athlete.name }}</span>
+          <UserLink :user="sub.athlete" class="rev__name">{{ sub.athlete.name }}</UserLink>
         </UserHoverCard>
         <span class="rev__tier">{{ tier.icon }} {{ tier.label }} {{ tier.division }} · {{ tier.dots }} DOTS</span>
       </div>

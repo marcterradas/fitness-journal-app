@@ -92,8 +92,7 @@ onBeforeUnmount(() => { clearTimeout(timer); window.removeEventListener('scroll'
           </span>
 
           <router-link v-if="isMe(person)" to="/profile" class="uh__cta">Your profile ›</router-link>
-          <!-- ponytail: no /u/:handle route yet, so others link to the ranking they sit on -->
-          <router-link v-else to="/search?tab=ranking" class="uh__cta">See on leaderboard ›</router-link>
+          <router-link v-else :to="`/u/${person.username}`" class="uh__cta">See profile ›</router-link>
         </span>
       </Transition>
     </Teleport>

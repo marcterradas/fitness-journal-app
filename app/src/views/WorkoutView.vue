@@ -702,7 +702,9 @@ function finish() {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: var(--color-secondary-soft);
+  /* Opaque: it floats over the set list, a translucent fill made it unreadable */
+  background: var(--color-surface);
+  background-image: linear-gradient(var(--color-secondary-soft), var(--color-secondary-soft));
   border: 1px solid var(--color-secondary);
   border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4);
