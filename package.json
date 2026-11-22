@@ -7,7 +7,9 @@
     "api"
   ],
   "scripts": {
-    "dev:app": "npm run dev --workspace=app",
+    "web": "npm run web --workspace=app",
+    "ios": "npm run ios --workspace=app",
+    "android": "npm run android --workspace=app",
     "dev:api": "npm run dev --workspace=api"
   }
 }
