@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router'
-import { Icon } from '@/ui/components/ui'
+import { Icon } from '@/ui/components'
 import { colors } from '@/ui/theme'
 
 // Bottom tabs = old Footer.vue. Other routes (settings, workout, u/[handle]...) are stack screens on top.

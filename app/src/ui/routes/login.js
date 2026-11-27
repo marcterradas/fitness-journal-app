@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import { router } from 'expo-router'
-import { Button, Icon, Input, Screen } from '@/ui/components/ui'
+import { Button, Icon, Input, Row, Screen, Text } from '@/ui/components'
 import { validateAuth } from '@/domain/authRules'
-import { colors, fs, fw, radius, space } from '@/ui/theme'
+import { colors, radius, space } from '@/ui/theme'
 
 const COPY = {
   login: { title: 'Welcome back', subtitle: 'Log in to keep your streak alive.', submit: 'Log in' },
@@ -39,13 +39,13 @@ export default function LoginScreen() {
   return (
     <Screen edges={['top', 'bottom']} style={st.auth}>
       <View style={{ gap: space[1] }}>
-        <Text style={st.title}>{copy.title}</Text>
-        <Text style={st.subtitle}>{copy.subtitle}</Text>
+        <Text variant="h1">{copy.title}</Text>
+        <Text variant="muted">{copy.subtitle}</Text>
       </View>
 
       {sent ? (
-        <Text style={st.notice} accessibilityRole="alert">
-          If an account exists for <Text style={{ fontWeight: fw.bold }}>{form.email}</Text>, a reset link is on its way.
+        <Text variant="small" style={st.notice} accessibilityRole="alert">
+          If an account exists for <Text variant="small" weight="bold">{form.email}</Text>, a reset link is on its way.
         </Text>
       ) : (
         <View style={{ gap: space[4] }}>
@@ -72,7 +72,7 @@ export default function LoginScreen() {
           )}
           {mode === 'login' && (
             <Pressable style={{ alignSelf: 'flex-end', marginTop: -space[2] }} onPress={() => switchMode('forgot')}>
-              <Text style={st.link}>Forgot password?</Text>
+              <Text variant="link">Forgot password?</Text>
             </Pressable>
           )}
           <Button size="lg" onPress={submit}>{copy.submit}</Button>
@@ -81,45 +81,36 @@ export default function LoginScreen() {
 
       {mode !== 'forgot' && (
         <>
-          <View style={st.divider}>
+          <Row gap={3}>
             <View style={st.line} />
-            <Text style={st.dividerText}>or continue with</Text>
+            <Text variant="dim">or continue with</Text>
             <View style={st.line} />
-          </View>
-          <View style={st.social}>
+          </Row>
+          <Row gap={3}>
             <Button variant="secondary" size="lg" style={{ flex: 1 }} onPress={() => router.replace('/')}>
               <Icon name="google" />
-              <Text style={st.socialText}>Google</Text>
+              <Text variant="h3" weight="semibold">Google</Text>
             </Button>
             <Button variant="secondary" size="lg" style={{ flex: 1 }} onPress={() => router.replace('/')}>
               <Icon name="apple" />
-              <Text style={st.socialText}>Apple</Text>
+              <Text variant="h3" weight="semibold">Apple</Text>
             </Button>
-          </View>
+          </Row>
         </>
       )}
 
-      <View style={st.foot}>
-        <Text style={st.footText}>{mode === 'login' ? 'No account?' : 'Already have an account?'}</Text>
+      <Row gap={1} justify="center">
+        <Text variant="muted">{mode === 'login' ? 'No account?' : 'Already have an account?'}</Text>
         <Pressable onPress={() => switchMode(mode === 'login' ? 'signup' : 'login')}>
-          <Text style={st.link}>{mode === 'login' ? 'Sign up' : 'Log in'}</Text>
+          <Text variant="link">{mode === 'login' ? 'Sign up' : 'Log in'}</Text>
         </Pressable>
-      </View>
+      </Row>
     </Screen>
   )
 }
 
 const st = StyleSheet.create({
   auth: { maxWidth: 384, gap: space[5], paddingVertical: space[8], flexGrow: 1, justifyContent: 'center' },
-  title: { color: colors.text, fontSize: fs.xxl, fontWeight: fw.bold, letterSpacing: -0.5 },
-  subtitle: { color: colors.textMuted, fontSize: fs.sm },
-  notice: { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accent, borderRadius: radius.md, padding: space[4], fontSize: fs.sm, color: colors.text, overflow: 'hidden' },
-  link: { color: colors.accent, fontWeight: fw.semibold, fontSize: fs.sm },
-  divider: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
+  notice: { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accent, borderRadius: radius.md, padding: space[4], overflow: 'hidden' },
   line: { flex: 1, height: 1, backgroundColor: colors.border },
-  dividerText: { color: colors.textDim, fontSize: fs.xs },
-  social: { flexDirection: 'row', gap: space[3] },
-  socialText: { color: colors.text, fontSize: fs.lg, fontWeight: fw.semibold },
-  foot: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: space[1] },
-  footText: { color: colors.textMuted, fontSize: fs.sm },
 })

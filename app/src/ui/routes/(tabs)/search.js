@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
-import { AppHeader, Avatar, Card, Chip, EmptyState, Screen, UserLink } from '@/ui/components/ui'
-import SportIcon from '@/ui/components/SportIcon'
-import Leaderboard from '@/ui/components/Leaderboard'
-import ReviewQueue from '@/ui/components/ReviewQueue'
-import ExerciseModal from '@/ui/components/ExerciseModal'
+import {
+  AppHeader, Avatar, Button, Card, Chip, EmptyState, ExerciseModal, IconButton, Leaderboard, ReviewQueue, Row, Screen, SportIcon, Text, UserLink,
+} from '@/ui/components'
 import { friends } from '@/api/mock/data/user'
 import { tierFromDots } from '@/domain/ranking'
 import { EXERCISE_MEDIA_CREDIT, exercises, workoutPlans } from '@/api/mock/data/exercises'
@@ -115,14 +113,14 @@ export default function ExploreScreen() {
     <Screen>
       <AppHeader />
 
-      <View style={{ paddingHorizontal: space[1] }}>
+      <View style={{ paddingHorizontal: space[1], gap: space[1] }}>
         {!!panel && (
-          <Pressable onPress={() => openPanel(null)} style={{ marginBottom: space[2] }}>
-            <Text style={{ color: colors.accent, fontSize: fs.sm }}>← Explore</Text>
+          <Pressable onPress={() => openPanel(null)} style={{ marginBottom: space[1] }} accessibilityRole="link">
+            <Text variant="link" weight="regular">← Explore</Text>
           </Pressable>
         )}
-        <Text style={styles.title}>{panel ? PANELS[panel].title : 'Explore'}</Text>
-        <Text style={styles.sub}>{panel ? PANELS[panel].sub : 'Athletes, workouts, exercises, challenges and posts.'}</Text>
+        <Text variant="h1">{panel ? PANELS[panel].title : 'Explore'}</Text>
+        <Text variant="muted">{panel ? PANELS[panel].sub : 'Athletes, workouts, exercises, challenges and posts.'}</Text>
       </View>
 
       {panel === 'ranking' && <Leaderboard />}
@@ -130,23 +128,22 @@ export default function ExploreScreen() {
 
       {!panel && (
         <>
-          <View style={styles.bar}>
-            <Text style={{ fontSize: fs.md }}>🔍</Text>
+          <Row style={styles.bar}>
+            <Text>🔍</Text>
             <TextInput
               value={query}
               onChangeText={setQuery}
               placeholder="Search people, workouts, exercises…"
               placeholderTextColor={colors.textDim}
+              accessibilityLabel="Search"
               style={styles.input}
               autoCapitalize="none"
               autoCorrect={false}
             />
             {!!query && (
-              <Pressable onPress={() => setQuery('')} style={styles.clear} accessibilityLabel="Clear">
-                <Text style={{ color: colors.textMuted, fontSize: fs.md, lineHeight: 18 }}>×</Text>
-              </Pressable>
+              <IconButton icon="close" label="Clear" size={24} variant="filled" onPress={() => setQuery('')} />
             )}
-          </View>
+          </Row>
 
           {chips.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2] }}>
@@ -165,23 +162,20 @@ export default function ExploreScreen() {
                   {/* Discover: the two panels and trending tags sit above the curated lists */}
                   <Pressable onPress={() => openPanel('ranking')}>
                     <Card style={{ gap: space[2] }}>
-                      <View style={styles.panelHead}>
-                        <Text style={styles.panelH}>🏆 Top this month</Text>
-                        <Text style={styles.go}>Full ranking →</Text>
-                      </View>
+                      <PanelHead title="🏆 Top this month" go="Full ranking →" />
                       {topThree.map((u, i) => (
-                        <View key={u.id} style={[styles.lead, u.me && { backgroundColor: colors.accentSoft }]}>
-                          <Text style={{ fontSize: fs.md }}>{MEDALS[i]}</Text>
+                        <Row key={u.id} gap={3} style={[styles.lead, u.me && { backgroundColor: colors.accentSoft }]}>
+                          <Text>{MEDALS[i]}</Text>
                           <Avatar src={u.avatar} size="sm" />
                           <View style={{ flex: 1 }}>
                             <UserLink user={u} style={{ fontWeight: fw.medium }}>{u.me ? 'You' : u.name}</UserLink>
                           </View>
-                          <Text style={{ fontSize: fs.sm }}>{tierFromDots(u.dots).icon}</Text>
-                          <Text style={styles.dim}>{u.points.toLocaleString()} pts</Text>
-                        </View>
+                          <Text variant="small">{tierFromDots(u.dots).icon}</Text>
+                          <Text variant="dim">{u.points.toLocaleString()} pts</Text>
+                        </Row>
                       ))}
-                      <Text style={[styles.dim, { textAlign: 'center', marginTop: space[1] }]}>
-                        You're <Text style={{ color: colors.text, fontWeight: fw.bold }}>#{globalBoard.me.rank.toLocaleString()}</Text>
+                      <Text variant="dim" align="center" style={{ marginTop: space[1] }}>
+                        You're <Text variant="dim" weight="bold" color={colors.text}>#{globalBoard.me.rank.toLocaleString()}</Text>
                         {' '}of {globalBoard.totalAthletes.toLocaleString()} athletes globally
                       </Text>
                     </Card>
@@ -189,49 +183,46 @@ export default function ExploreScreen() {
 
                   <Pressable onPress={() => openPanel('review')}>
                     <Card style={{ gap: space[2] }}>
-                      <View style={styles.panelHead}>
-                        <Text style={styles.panelH}>🎥 Waiting on the community</Text>
-                        <Text style={styles.go}>Review queue →</Text>
-                      </View>
-                      <Text style={styles.sub}>
-                        <Text style={{ color: colors.text, fontWeight: fw.bold }}>{pending.length}</Text>
+                      <PanelHead title="🎥 Waiting on the community" go="Review queue →" />
+                      <Text variant="muted">
+                        <Text variant="muted" weight="bold" color={colors.text}>{pending.length}</Text>
                         {' '}high-tier lift{pending.length === 1 ? '' : 's'} need verifying. Every review counts toward your reviewer badge.
                       </Text>
-                      <View style={styles.faces}>
+                      <Row gap={0}>
                         {pending.slice(0, 4).map((s, i) => (
                           <View key={s.id} style={i > 0 && { marginLeft: -8 }}>
                             <Avatar src={s.athlete.avatar} size="sm" />
                           </View>
                         ))}
-                        {pending.length > 4 && <Text style={[styles.dim, { marginLeft: space[2] }]}>+{pending.length - 4}</Text>}
-                      </View>
+                        {pending.length > 4 && <Text variant="dim" style={{ marginLeft: space[2] }}>+{pending.length - 4}</Text>}
+                      </Row>
                     </Card>
                   </Pressable>
 
                   <View style={styles.block}>
-                    <Text style={styles.blockH}>TRENDING</Text>
-                    <View style={styles.wrap}>
+                    <Text variant="overline" color={colors.textMuted}>Trending</Text>
+                    <Row wrap>
                       {TRENDING.map(t => <Chip key={t} size="sm" onPress={() => setQuery(t)}>{t}</Chip>)}
-                    </View>
+                    </Row>
                   </View>
                 </>
               ) : (
-                <Text style={styles.sub}>
+                <Text variant="muted">
                   {totalHits} result{totalHits === 1 ? '' : 's'}{q ? ` for “${query}”` : ''}
                 </Text>
               )}
 
               {sections.map(sec => (
                 <View key={sec.group.id} style={styles.block}>
-                  <View style={styles.blockHead}>
-                    <Text style={styles.blockH}>
-                      {sec.label.toUpperCase()}{sec.count ? `  ${sec.count}` : ''}
+                  <Row gap={3} justify="space-between">
+                    <Text variant="overline" color={colors.textMuted}>
+                      {sec.label}{sec.count ? `  ${sec.count}` : ''}
                     </Text>
                     {sec.more && (
-                      <Pressable onPress={() => pick(sec.group.id)}><Text style={styles.go}>See all →</Text></Pressable>
+                      <Pressable onPress={() => pick(sec.group.id)} accessibilityRole="button"><GoText>See all →</GoText></Pressable>
                     )}
-                  </View>
-                  {sec.group.id === 'exercises' && <Text style={styles.credit}>{EXERCISE_MEDIA_CREDIT}</Text>}
+                  </Row>
+                  {sec.group.id === 'exercises' && <Text variant="dim" style={{ fontSize: 10 }}>{EXERCISE_MEDIA_CREDIT}</Text>}
                   {sec.hits.map(i => {
                     const k = `${sec.group.id}:${i.id}`
                     const done = saved.has(k)
@@ -244,16 +235,14 @@ export default function ExploreScreen() {
                             : i.sport ? <SportIcon sport={i.sport} size="md" />
                             : <View style={styles.emoji}><Text style={{ fontSize: 24 }}>{i.emoji}</Text></View>}
                           <View style={styles.rowMain}>
-                            <Text style={styles.rowTitle}>{i.title}</Text>
-                            <Text style={styles.dim}>{i.sub}</Text>
-                            {!!i.text && <Text style={[styles.sub, { marginTop: space[1] }]} numberOfLines={2}>{i.text}</Text>}
+                            <Text weight="semibold">{i.title}</Text>
+                            <Text variant="dim">{i.sub}</Text>
+                            {!!i.text && <Text variant="muted" style={{ marginTop: space[1] }} numberOfLines={2}>{i.text}</Text>}
                           </View>
                           {!!sec.group.action && (
-                            <Pressable onPress={() => toggle(k)} style={[styles.btn, done && styles.btnDone]}>
-                              <Text style={[styles.btnText, done && { color: colors.textMuted }]}>
-                                {done ? sec.group.done : sec.group.action}
-                              </Text>
-                            </Pressable>
+                            <Button size="sm" variant={done ? 'secondary' : 'primary'} onPress={() => toggle(k)}>
+                              {done ? sec.group.done : sec.group.action}
+                            </Button>
                           )}
                         </Card>
                       </Pressable>
@@ -273,32 +262,24 @@ export default function ExploreScreen() {
   )
 }
 
+const GoText = ({ children }) => <Text variant="dim" weight="medium" color={colors.accent}>{children}</Text>
+
+function PanelHead({ title, go }) {
+  return (
+    <Row gap={3} align="baseline" justify="space-between">
+      <Text variant="small" weight="semibold" style={{ flexShrink: 1 }}>{title}</Text>
+      <GoText>{go}</GoText>
+    </Row>
+  )
+}
+
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: fs.xxl, fontWeight: fw.bold, letterSpacing: -0.5 },
-  sub: { color: colors.textMuted, fontSize: fs.sm, marginTop: space[1] },
-  dim: { color: colors.textDim, fontSize: fs.xs },
-  bar: {
-    flexDirection: 'row', alignItems: 'center', gap: space[2], backgroundColor: colors.surface,
-    borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, paddingHorizontal: space[3],
-  },
+  bar: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, paddingHorizontal: space[3] },
   input: { flex: 1, paddingVertical: space[3], color: colors.text, fontSize: fs.md },
-  clear: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
-  panelHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space[3] },
-  panelH: { color: colors.text, fontSize: fs.sm, fontWeight: fw.semibold, flexShrink: 1 },
-  go: { color: colors.accent, fontSize: fs.xs, fontWeight: fw.medium },
-  lead: { flexDirection: 'row', alignItems: 'center', gap: space[3], paddingVertical: space[2], borderBottomWidth: 1, borderBottomColor: colors.border },
-  faces: { flexDirection: 'row', alignItems: 'center' },
+  lead: { paddingVertical: space[2], borderBottomWidth: 1, borderBottomColor: colors.border },
   block: { gap: space[2] },
-  blockHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[3] },
-  blockH: { color: colors.textMuted, fontSize: fs.xs, fontWeight: fw.semibold, letterSpacing: 0.8 },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
-  credit: { color: colors.textDim, fontSize: 10 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
   thumb: { width: 56, height: 56, borderRadius: radius.md, backgroundColor: colors.surface2 },
   emoji: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
   rowMain: { flex: 1, minWidth: 0, gap: space[1] },
-  rowTitle: { color: colors.text, fontWeight: fw.semibold },
-  btn: { paddingVertical: space[2], paddingHorizontal: space[4], backgroundColor: colors.accent, borderRadius: radius.pill },
-  btnDone: { backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border },
-  btnText: { color: colors.accentInk, fontSize: fs.sm, fontWeight: fw.semibold },
 })

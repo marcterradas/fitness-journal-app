@@ -1,14 +1,18 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import { router } from 'expo-router'
-import { Badge, Card, EmptyState, s as ui } from '@/ui/components/ui'
-import SportIcon from '@/ui/components/SportIcon'
-import WorkoutCalendar from '@/ui/components/WorkoutCalendar'
-import JournalEntry from '@/ui/components/JournalEntry'
+import Badge from '../../atoms/Badge'
+import Button from '../../atoms/Button'
+import Card from '../../atoms/Card'
+import Row from '../../atoms/Row'
+import Text from '../../atoms/Text'
+import EmptyState from '../../molecules/EmptyState'
+import JournalEntry from '../../molecules/JournalEntry'
+import SportIcon from '../../atoms/SportIcon'
+import WorkoutCalendar from '../WorkoutCalendar'
 import { entryMeta } from '@/domain/journal'
 import { parseYmd } from '@/domain/dates'
-import { colors, fs, fw, radius, space, sportColor } from '@/ui/theme'
-import { js } from './styles'
+import { colors, radius, space, sportColor } from '@/ui/theme'
 
 const fmtShort = d => parseYmd(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
@@ -27,43 +31,41 @@ export default function LogTab({ data, onNewEntry }) {
   return (
     <>
       <Card padding="lg">
-        <View style={[ui.row, { justifyContent: 'space-between', alignItems: 'flex-start' }]}>
+        <Row justify="space-between" align="flex-start">
           <View style={{ flex: 1 }}>
-            <Text style={js.eyebrow}>TODAY'S SESSION</Text>
-            <Text style={ui.h2}>{w.title}</Text>
+            <Text variant="overline" style={{ marginBottom: space[1] }}>Today's session</Text>
+            <Text variant="h2">{w.title}</Text>
           </View>
           <SportIcon sport={w.sport} size="lg" />
-        </View>
-        <View style={[ui.row, { flexWrap: 'wrap' }]}>
+        </Row>
+        <Row wrap>
           <Badge tone={w.sport} icon="⏱">{w.durationMin} min</Badge>
           <Badge tone="neutral" icon="📋">{w.exerciseCount} exercises</Badge>
-        </View>
+        </Row>
         <View>
           {w.exercises.slice(0, 4).map(ex => (
             <View key={ex.name} style={st.listItem}>
-              <Text style={js.itemText}>{ex.name}</Text>
-              <Text style={js.itemMeta}>{ex.sets} × {ex.reps}</Text>
+              <Text variant="small">{ex.name}</Text>
+              <Text variant="muted" color={colors.textDim}>{ex.sets} × {ex.reps}</Text>
             </View>
           ))}
           {w.exercises.length > 4 && (
-            <Text style={[js.itemMeta, { fontStyle: 'italic', paddingVertical: space[3] }]}>+{w.exercises.length - 4} more</Text>
+            <Text variant="muted" color={colors.textDim} style={{ fontStyle: 'italic', paddingVertical: space[3] }}>+{w.exercises.length - 4} more</Text>
           )}
         </View>
-        <Pressable style={js.primary} onPress={() => router.push('/workout')}>
-          <Text style={[js.primaryText, { fontSize: fs.md }]}>Start workout →</Text>
-        </Pressable>
+        <Button onPress={() => router.push('/workout')}>Start workout →</Button>
       </Card>
 
       <Card padding="lg">
-        <View style={[ui.row, { justifyContent: 'space-between' }]}>
+        <Row justify="space-between">
           <View style={{ gap: 2, flexShrink: 1 }}>
-            <Text style={js.sectionH}>{showMonth ? 'This month' : 'This week'}</Text>
-            {!showMonth && <Text style={ui.dim}>{weekStats.sessions} sessions · {weekStats.minutes} min</Text>}
+            <Text variant="label" weight="semibold">{showMonth ? 'This month' : 'This week'}</Text>
+            {!showMonth && <Text variant="dim">{weekStats.sessions} sessions · {weekStats.minutes} min</Text>}
           </View>
           <Pressable style={st.toggle} onPress={() => { setShowMonth(!showMonth); setSelected(null) }}>
-            <Text style={{ color: colors.textMuted, fontSize: fs.xs, fontWeight: fw.medium }}>{showMonth ? 'Week' : 'Month'}</Text>
+            <Text variant="dim" weight="medium" color={colors.textMuted}>{showMonth ? 'Week' : 'Month'}</Text>
           </Pressable>
-        </View>
+        </Row>
 
         {!showMonth && (
           <View style={st.week}>
@@ -72,9 +74,9 @@ export default function LogTab({ data, onNewEntry }) {
               return (
                 <Pressable key={d.key} style={[st.weekDay, d.isFuture && { opacity: 0.45 }]} onPress={() => pickDay(d)}
                   accessibilityLabel={d.entry ? d.entry.title : 'Log a session'}>
-                  <Text style={st.weekLabel}>{d.label.toUpperCase()}</Text>
+                  <Text variant="dim" style={{ letterSpacing: 0.5 }}>{d.label.toUpperCase()}</Text>
                   <View style={[st.circle, d.entry && st.circleDone, d.isToday && st.circleToday, active && st.circleActive]}>
-                    <Text style={[st.weekNum, d.isToday && { color: colors.accent }, active && { color: colors.accentInk }]}>{d.day}</Text>
+                    <Text variant="small" weight="semibold" color={active ? colors.accentInk : d.isToday ? colors.accent : undefined}>{d.day}</Text>
                     {d.entry && <View style={[st.weekDot, { backgroundColor: sportColor(d.entry.sport) }]} />}
                   </View>
                 </Pressable>
@@ -88,17 +90,17 @@ export default function LogTab({ data, onNewEntry }) {
 
       <Card padding="none" style={{ gap: 0 }}>
         <View style={st.recentHead}>
-          <Text style={js.sectionH}>{showAll ? `All sessions (${entries.length})` : 'Recent sessions'}</Text>
+          <Text variant="label" weight="semibold">{showAll ? `All sessions (${entries.length})` : 'Recent sessions'}</Text>
           {entries.length > 3 && (
             <Pressable onPress={() => setShowAll(!showAll)}>
-              <Text style={js.link}>{showAll ? 'Show less' : 'See all →'}</Text>
+              <Text variant="link">{showAll ? 'Show less' : 'See all →'}</Text>
             </Pressable>
           )}
         </View>
 
         {!entries.length ? (
           <EmptyState icon="📓" title="No sessions yet" description="Log your first training session to start the journal.">
-            <Pressable style={js.primary} onPress={() => onNewEntry()}><Text style={js.primaryText}>+ New entry</Text></Pressable>
+            <Button onPress={() => onNewEntry()}>+ New entry</Button>
           </EmptyState>
         ) : visible.map((e, i) => (
           <View key={e.id} style={i > 0 && st.divider}>
@@ -106,11 +108,11 @@ export default function LogTab({ data, onNewEntry }) {
               onPress={() => setOpenId(openId === e.id ? null : e.id)}>
               <SportIcon sport={e.sport} size="sm" />
               <View style={{ flex: 1, gap: 2 }}>
-                <Text style={st.recentTitle}>{e.title}</Text>
-                <Text style={ui.dim}>{entryMeta(e)}</Text>
+                <Text variant="small" weight="medium">{e.title}</Text>
+                <Text variant="dim">{entryMeta(e)}</Text>
               </View>
-              <Text style={ui.dim}>{fmtShort(e.date)}</Text>
-              <Text style={ui.dim}>{openId === e.id ? '▴' : '▾'}</Text>
+              <Text variant="dim">{fmtShort(e.date)}</Text>
+              <Text variant="dim">{openId === e.id ? '▴' : '▾'}</Text>
             </Pressable>
             {openId === e.id && (
               <View style={{ paddingHorizontal: space[3], paddingBottom: space[3] }}>
@@ -129,15 +131,12 @@ const st = StyleSheet.create({
   toggle: { paddingVertical: space[1], paddingHorizontal: space[3], backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill },
   week: { flexDirection: 'row', gap: space[1] },
   weekDay: { flex: 1, alignItems: 'center', gap: space[2] },
-  weekLabel: { fontSize: fs.xs, color: colors.textDim, letterSpacing: 0.5 },
   circle: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   circleDone: { backgroundColor: colors.surfaceHover, borderColor: colors.borderStrong },
   circleToday: { borderColor: colors.accent },
   circleActive: { backgroundColor: colors.accent, borderColor: colors.accent },
-  weekNum: { fontSize: fs.sm, fontWeight: fw.semibold, color: colors.text },
   weekDot: { position: 'absolute', bottom: 3, width: 6, height: 6, borderRadius: 3 },
   recentHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: space[4], borderBottomWidth: 1, borderBottomColor: colors.border },
   divider: { borderTopWidth: 1, borderTopColor: colors.border },
   recentItem: { flexDirection: 'row', alignItems: 'center', gap: space[3], paddingVertical: space[3], paddingHorizontal: space[4] },
-  recentTitle: { fontSize: fs.sm, fontWeight: fw.medium, color: colors.text },
 })

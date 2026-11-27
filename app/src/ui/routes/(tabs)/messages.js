@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
-import { AppHeader, Avatar, Card, Screen } from '@/ui/components/ui'
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
+import { AppHeader, Avatar, Button, Card, IconButton, Row, Screen, Text } from '@/ui/components'
 import { conversations as INITIAL } from '@/api/mock/data/conversations'
-import { colors, fs, fw, radius, space } from '@/ui/theme'
-
+import { colors, fs, radius, space } from '@/ui/theme'
 
 // ponytail: mobile layout only (list OR chat). The old desktop split view (list + window side by side) is skipped.
 export default function MessagesScreen() {
@@ -30,16 +29,14 @@ export default function MessagesScreen() {
     return (
       <Screen scroll={false} style={{ padding: 0, paddingBottom: 0, gap: 0 }}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={st.chatHead}>
-            <Pressable style={st.chatBack} onPress={() => setActiveId(null)} accessibilityLabel="Back to messages">
-              <Text style={{ color: colors.text, fontSize: 20 }}>←</Text>
-            </Pressable>
+          <Row gap={3} style={st.chatHead}>
+            <IconButton icon="back" label="Back to messages" size={32} onPress={() => setActiveId(null)} />
             <Avatar src={active.avatar} size="sm" />
             <View>
-              <Text style={st.name}>{active.name}</Text>
-              <Text style={st.status}>{active.online ? 'Online' : 'Offline'}</Text>
+              <Text weight="semibold">{active.name}</Text>
+              <Text variant="dim">{active.online ? 'Online' : 'Offline'}</Text>
             </View>
-          </View>
+          </Row>
 
           <ScrollView
             ref={scrollRef}
@@ -49,13 +46,13 @@ export default function MessagesScreen() {
           >
             {active.messages.map(m => (
               <View key={m.id} style={[st.msg, m.isMe ? st.msgMe : st.msgThem]}>
-                <Text style={[st.bubble, m.isMe ? st.bubbleMe : st.bubbleThem]}>{m.text}</Text>
-                <Text style={st.msgTime}>{m.time}</Text>
+                <Text variant="small" color={m.isMe ? colors.accentInk : colors.text} style={[st.bubble, m.isMe ? st.bubbleMe : st.bubbleThem]}>{m.text}</Text>
+                <Text variant="dim" style={{ paddingHorizontal: space[2] }}>{m.time}</Text>
               </View>
             ))}
           </ScrollView>
 
-          <View style={st.inputRow}>
+          <Row style={st.inputRow}>
             <TextInput
               value={draft}
               onChangeText={setDraft}
@@ -63,12 +60,11 @@ export default function MessagesScreen() {
               placeholder="Type a message..."
               placeholderTextColor={colors.textDim}
               returnKeyType="send"
+              accessibilityLabel="Message"
               style={st.input}
             />
-            <Pressable style={[st.send, !draft.trim() && { opacity: 0.4 }]} disabled={!draft.trim()} onPress={send}>
-              <Text style={st.sendText}>Send</Text>
-            </Pressable>
-          </View>
+            <Button disabled={!draft.trim()} onPress={send}>Send</Button>
+          </Row>
         </KeyboardAvoidingView>
       </Screen>
     )
@@ -78,8 +74,8 @@ export default function MessagesScreen() {
     <Screen>
       <AppHeader />
       <View>
-        <Text style={st.eyebrow}>INBOX</Text>
-        <Text style={st.title}>Messages</Text>
+        <Text variant="overline">Inbox</Text>
+        <Text variant="h1">Messages</Text>
       </View>
 
       <Card padding="none" style={{ gap: 0, overflow: 'hidden' }}>
@@ -96,14 +92,14 @@ export default function MessagesScreen() {
                 {c.online && <View style={st.online} accessibilityLabel="Online" />}
               </View>
               <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                <View style={st.itemRow}>
-                  <Text style={st.name} numberOfLines={1}>{c.name}</Text>
-                  <Text style={st.status}>{last?.time}</Text>
-                </View>
-                <View style={st.itemRow}>
-                  <Text style={st.preview} numberOfLines={1}>{last?.text || ''}</Text>
-                  {c.unread > 0 && <Text style={st.badge}>{c.unread}</Text>}
-                </View>
+                <Row justify="space-between">
+                  <Text weight="semibold" style={{ flexShrink: 1 }} numberOfLines={1}>{c.name}</Text>
+                  <Text variant="dim">{last?.time}</Text>
+                </Row>
+                <Row justify="space-between">
+                  <Text variant="muted" style={{ flex: 1, minWidth: 0 }} numberOfLines={1}>{last?.text || ''}</Text>
+                  {c.unread > 0 && <Text variant="dim" weight="bold" color={colors.accentInk} style={st.badge}>{c.unread}</Text>}
+                </Row>
               </View>
             </Pressable>
           )
@@ -114,31 +110,20 @@ export default function MessagesScreen() {
 }
 
 const st = StyleSheet.create({
-  eyebrow: { color: colors.textDim, fontSize: fs.xs, fontWeight: fw.medium, letterSpacing: 0.7 },
-  title: { color: colors.text, fontSize: fs.xxl, fontWeight: fw.bold, letterSpacing: -0.5 },
-
   item: { flexDirection: 'row', alignItems: 'center', gap: space[3], paddingVertical: space[3], paddingHorizontal: space[4] },
   sep: { borderTopWidth: 1, borderTopColor: colors.border },
   online: { position: 'absolute', right: 0, bottom: 0, width: 11, height: 11, borderRadius: 6, backgroundColor: colors.success, borderWidth: 2, borderColor: colors.surface },
-  itemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[2] },
-  name: { color: colors.text, fontWeight: fw.semibold, fontSize: fs.md, flexShrink: 1 },
-  status: { color: colors.textDim, fontSize: fs.xs },
-  preview: { flex: 1, minWidth: 0, color: colors.textMuted, fontSize: fs.sm },
-  badge: { backgroundColor: colors.accent, color: colors.accentInk, fontSize: fs.xs, fontWeight: fw.bold, paddingVertical: 2, paddingHorizontal: 8, borderRadius: radius.pill, minWidth: 20, textAlign: 'center', overflow: 'hidden' },
+  badge: { backgroundColor: colors.accent, paddingVertical: 2, paddingHorizontal: 8, borderRadius: radius.pill, minWidth: 20, textAlign: 'center', overflow: 'hidden' },
 
-  chatHead: { flexDirection: 'row', alignItems: 'center', gap: space[3], paddingVertical: space[3], paddingHorizontal: space[4], borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: colors.surface },
-  chatBack: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  chatHead: { paddingVertical: space[3], paddingHorizontal: space[4], borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: colors.surface },
   msgs: { padding: space[4], gap: space[3] },
   msg: { maxWidth: '75%', gap: 2 },
   msgMe: { alignSelf: 'flex-end', alignItems: 'flex-end' },
   msgThem: { alignSelf: 'flex-start', alignItems: 'flex-start' },
-  bubble: { paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.lg, fontSize: fs.sm, lineHeight: 20, overflow: 'hidden' },
-  bubbleMe: { backgroundColor: colors.accent, color: colors.accentInk, borderBottomRightRadius: radius.sm },
-  bubbleThem: { backgroundColor: colors.surface2, color: colors.text, borderBottomLeftRadius: radius.sm },
-  msgTime: { color: colors.textDim, fontSize: fs.xs, paddingHorizontal: space[2] },
+  bubble: { paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.lg, lineHeight: 20, overflow: 'hidden' },
+  bubbleMe: { backgroundColor: colors.accent, borderBottomRightRadius: radius.sm },
+  bubbleThem: { backgroundColor: colors.surface2, borderBottomLeftRadius: radius.sm },
 
-  inputRow: { flexDirection: 'row', gap: space[2], padding: space[3], borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface },
+  inputRow: { padding: space[3], borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.surface },
   input: { flex: 1, backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border, color: colors.text, paddingVertical: space[3], paddingHorizontal: space[4], borderRadius: radius.pill, fontSize: fs.sm },
-  send: { paddingHorizontal: space[5], backgroundColor: colors.accent, borderRadius: radius.pill, justifyContent: 'center' },
-  sendText: { color: colors.accentInk, fontWeight: fw.semibold },
 })

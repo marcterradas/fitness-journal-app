@@ -1,9 +1,15 @@
 import { useRef, useState } from 'react'
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { router } from 'expo-router'
-import { Avatar, Badge, Card, UserLink } from '@/ui/components/ui'
-import SportIcon from '@/ui/components/SportIcon'
+import Avatar from '../atoms/Avatar'
+import Badge from '../atoms/Badge'
+import Button from '../atoms/Button'
+import Card from '../atoms/Card'
+import Row from '../atoms/Row'
+import SportIcon from '../atoms/SportIcon'
+import Text from '../atoms/Text'
+import UserLink from '../molecules/UserLink'
 import { currentUser } from '@/api/mock/data/user'
 import { colors, fs, fw, radius, space } from '@/ui/theme'
 
@@ -91,27 +97,28 @@ export default function Post({ post }) {
 
   return (
     <Card padding="none" style={st.post}>
-      <View style={st.head}>
-        <Pressable onPress={() => router.push(post.user.username === currentUser.username ? '/profile' : `/u/${post.user.username}`)}>
+      <Row gap={3} style={{ padding: space[4] }}>
+        {/* /u/<me> redirects to /profile */}
+        <Pressable onPress={() => router.push(`/u/${post.user.username}`)} accessibilityLabel={`${post.user.name}'s profile`}>
           <Avatar src={post.user.avatar} size="md" />
         </Pressable>
         <View style={st.who}>
           <Text numberOfLines={1}>
             <UserLink user={post.user}>{post.user.name}</UserLink>
-            <Text style={st.dim}> · {post.when}</Text>
+            <Text variant="dim"> · {post.when}</Text>
           </Text>
-          <View style={st.row}>
+          <Row>
             <UserLink user={post.user} style={st.handle}>@{post.user.username}</UserLink>
-            {post.type === 'workout' && <Text style={st.typeTag}>WORKOUT</Text>}
-          </View>
+            {post.type === 'workout' && <Text variant="overline" color={colors.accent} style={st.typeTag}>Workout</Text>}
+          </Row>
         </View>
         {!!post.sport && <SportIcon sport={post.sport} size="sm" />}
-      </View>
+      </Row>
 
       {!!(post.title || post.text || post.badge) && (
         <View style={st.body}>
-          {!!post.title && <Text style={st.title}>{post.title}</Text>}
-          {!!post.text && <Text style={st.text}>{post.text}</Text>}
+          {!!post.title && <Text variant="h3" weight="semibold">{post.title}</Text>}
+          {!!post.text && <Text style={{ lineHeight: 24 }}>{post.text}</Text>}
           {!!post.badge && <Badge tone="accent" icon={post.badge.icon}>{post.badge.label}</Badge>}
         </View>
       )}
@@ -147,20 +154,20 @@ export default function Post({ post }) {
             <>
               {activeMedia > 0 && (
                 <Pressable style={[st.arrow, { left: space[3] }]} onPress={() => goToMedia(activeMedia - 1)} accessibilityLabel="Previous">
-                  <Text style={st.arrowText}>‹</Text>
+                  <Text color="#fff" style={st.arrowText}>‹</Text>
                 </Pressable>
               )}
               {activeMedia < media.length - 1 && (
                 <Pressable style={[st.arrow, { right: space[3] }]} onPress={() => goToMedia(activeMedia + 1)} accessibilityLabel="Next">
-                  <Text style={st.arrowText}>›</Text>
+                  <Text color="#fff" style={st.arrowText}>›</Text>
                 </Pressable>
               )}
-              <Text style={st.counter}>{activeMedia + 1}/{media.length}</Text>
-              <View style={st.dots}>
+              <Text variant="dim" weight="medium" color="#fff" style={st.counter}>{activeMedia + 1}/{media.length}</Text>
+              <Row gap={1} justify="center" style={st.dots}>
                 {media.map((_, i) => (
-                  <Pressable key={i} onPress={() => goToMedia(i)} style={[st.dot, i === activeMedia && st.dotActive]} />
+                  <Pressable key={i} onPress={() => goToMedia(i)} style={[st.dot, i === activeMedia && st.dotActive]} accessibilityLabel={`Media ${i + 1}`} />
                 ))}
-              </View>
+              </Row>
             </>
           )}
         </View>
@@ -170,8 +177,8 @@ export default function Post({ post }) {
         <View style={[st.section, st.stats]}>
           {stats.map(([v, l]) => (
             <View key={l}>
-              <Text style={st.statV}>{v}</Text>
-              <Text style={st.statL}>{l}</Text>
+              <Text variant="h3">{v}</Text>
+              <Text variant="overline" weight="regular">{l}</Text>
             </View>
           ))}
         </View>
@@ -179,23 +186,23 @@ export default function Post({ post }) {
 
       {detailBits.length > 0 && (
         <Pressable style={st.detailsToggle} onPress={() => setShowDetails(!showDetails)} accessibilityState={{ expanded: showDetails }}>
-          <Text style={st.detailsText}>{detailBits.join(' · ')}</Text>
-          <Text style={st.detailsText}>{showDetails ? '▴' : '▾'}</Text>
+          <Text variant="overline" weight="regular">{detailBits.join(' · ')}</Text>
+          <Text variant="dim">{showDetails ? '▴' : '▾'}</Text>
         </Pressable>
       )}
 
       {showDetails && splits.length > 0 && (
         <View style={st.section}>
-          <View style={st.chartHead}>
-            <Text style={st.chartTitle}>Splits</Text>
-            <Text style={st.dim}>fastest {fastestSplit.pace} /km</Text>
-          </View>
+          <Row align="baseline" justify="space-between">
+            <Text variant="overline">Splits</Text>
+            <Text variant="dim">fastest {fastestSplit.pace} /km</Text>
+          </Row>
           <View style={st.splits}>
             {splits.map(s => (
               <View key={s.km} style={st.split}>
-                {s.fastest && <Text style={st.splitPace}>{s.pace}</Text>}
+                {s.fastest && <Text variant="dim" weight="semibold" color={colors.accent} style={st.tiny}>{s.pace}</Text>}
                 <View style={[st.splitCol, s.fastest && { backgroundColor: colors.accent }, { height: `${s.pct * 0.7}%` }]} />
-                <Text style={st.splitKm}>{s.km}</Text>
+                <Text variant="dim" style={st.tiny}>{s.km}</Text>
               </View>
             ))}
           </View>
@@ -204,40 +211,40 @@ export default function Post({ post }) {
 
       {showDetails && hrZones.length > 0 && (
         <View style={st.section}>
-          <View style={st.chartHead}>
-            <Text style={st.chartTitle}>Heart rate</Text>
-            <Text style={st.dim}>avg {post.hr.avg} · max {post.hr.max} bpm</Text>
-          </View>
+          <Row align="baseline" justify="space-between">
+            <Text variant="overline">Heart rate</Text>
+            <Text variant="dim">avg {post.hr.avg} · max {post.hr.max} bpm</Text>
+          </Row>
           <View style={st.hrStrip}>
             {hrZones.filter(z => z.min > 0).map(z => (
               <View key={z.z} style={{ flex: z.pct, minWidth: 4, backgroundColor: z.color }} />
             ))}
           </View>
-          <View style={st.hrLegend}>
+          <Row gap={3} wrap>
             {hrZones.map(z => (
-              <View key={z.z} style={[st.row, { gap: 4 }, z.min === 0 && { opacity: 0.4 }]}>
+              <Row key={z.z} gap={1} style={z.min === 0 && { opacity: 0.4 }}>
                 <View style={[st.hrDot, { backgroundColor: z.color }]} />
-                <Text style={st.hrZ}>Z{z.z}</Text>
-                <Text style={st.dim}>{z.min}m</Text>
-              </View>
+                <Text variant="dim" weight="semibold" color={colors.textMuted}>Z{z.z}</Text>
+                <Text variant="dim">{z.min}m</Text>
+              </Row>
             ))}
-          </View>
+          </Row>
         </View>
       )}
 
       {showDetails && exercises.length > 0 && (
         <View style={st.section}>
-          <View style={st.chartHead}>
-            <Text style={st.chartTitle}>Exercises</Text>
-            {totalVolumeKg > 0 && <Text style={st.dim}>{totalVolumeKg.toLocaleString()} kg total</Text>}
-          </View>
+          <Row align="baseline" justify="space-between">
+            <Text variant="overline">Exercises</Text>
+            {totalVolumeKg > 0 && <Text variant="dim">{totalVolumeKg.toLocaleString()} kg total</Text>}
+          </Row>
           {exercises.map(ex => (
             <View key={ex.name} style={{ gap: 5 }}>
-              <View style={st.row}>
-                <Text style={st.exName}>{ex.name}</Text>
-                {ex.pr && <Text style={st.pr}>PR</Text>}
-                <Text style={st.dim}>{ex.sets}×{ex.reps}{ex.weightKg ? ` · ${ex.weightKg} kg` : ''}</Text>
-              </View>
+              <Row>
+                <Text variant="small" weight="medium" style={{ flex: 1, minWidth: 0 }}>{ex.name}</Text>
+                {ex.pr && <Text variant="dim" weight="bold" color={colors.accentInk} style={st.pr}>PR</Text>}
+                <Text variant="dim">{ex.sets}×{ex.reps}{ex.weightKg ? ` · ${ex.weightKg} kg` : ''}</Text>
+              </Row>
               <View style={st.track}>
                 <View style={[st.bar, ex.pr && { backgroundColor: colors.accent }, { width: `${ex.pct}%` }]} />
               </View>
@@ -246,41 +253,43 @@ export default function Post({ post }) {
         </View>
       )}
 
-      <View style={st.actions}>
+      <Row style={st.actions}>
         <Pressable style={st.btn} onPress={toggleKudos} accessibilityLabel="Give kudos">
-          <Text style={st.btnIcon}>{liked ? '💚' : '🤍'}</Text>
-          <Text style={[st.btnCount, liked && { color: colors.accent }]}>{kudos}</Text>
+          <Text>{liked ? '💚' : '🤍'}</Text>
+          <Text variant="muted" weight="medium" color={liked ? colors.accent : undefined}>{kudos}</Text>
         </Pressable>
         <Pressable style={st.btn} onPress={() => setShowCommentInput(!showCommentInput)} accessibilityLabel="Comment">
-          <Text style={st.btnIcon}>💬</Text>
-          <Text style={[st.btnCount, showCommentInput && { color: colors.accent }]}>{comments.length}</Text>
+          <Text>💬</Text>
+          <Text variant="muted" weight="medium" color={showCommentInput ? colors.accent : undefined}>{comments.length}</Text>
         </Pressable>
         {/* ponytail: share is a dead button, like the original */}
         <Pressable style={st.btn} accessibilityLabel="Share">
-          <Text style={st.btnIcon}>📤</Text>
+          <Text>📤</Text>
         </Pressable>
-      </View>
+      </Row>
 
       {(comments.length > 0 || showCommentInput) && (
         <View style={st.comments}>
           {visibleComments.map((c, i) => (
-            <View key={i} style={st.comment}>
+            <Row key={i} align="flex-start">
               <Avatar src={c.avatar} size="xs" />
-              <Text style={st.bubble}>
-                <Text style={st.commentName}>{c.user}  </Text>
-                <Text style={st.commentText}>{c.text}</Text>
+              <Text variant="small" style={st.bubble}>
+                <Text variant="small" weight="semibold">{c.user}  </Text>
+                <Text variant="muted">{c.text}</Text>
               </Text>
-            </View>
+            </Row>
           ))}
 
           {hiddenCount > 0 && !showAllComments && (
             <Pressable onPress={() => setShowAllComments(true)}>
-              <Text style={st.more}>View {hiddenCount} more {hiddenCount === 1 ? 'comment' : 'comments'}</Text>
+              <Text variant="muted" color={colors.textDim} style={{ paddingVertical: space[1] }}>
+                View {hiddenCount} more {hiddenCount === 1 ? 'comment' : 'comments'}
+              </Text>
             </Pressable>
           )}
 
           {showCommentInput && (
-            <View style={[st.row, { paddingTop: space[1] }]}>
+            <Row style={{ paddingTop: space[1] }}>
               <Avatar src={currentUser.avatar} size="xs" />
               <TextInput
                 autoFocus
@@ -290,12 +299,11 @@ export default function Post({ post }) {
                 placeholder="Add a comment…"
                 placeholderTextColor={colors.textDim}
                 returnKeyType="send"
+                accessibilityLabel="Comment"
                 style={st.commentInput}
               />
-              <Pressable onPress={addComment} disabled={!commentText.trim()} style={[st.submit, !commentText.trim() && { opacity: 0.35 }]}>
-                <Text style={st.submitText}>Post</Text>
-              </Pressable>
-            </View>
+              <Button size="sm" onPress={addComment} disabled={!commentText.trim()}>Post</Button>
+            </Row>
           )}
         </View>
       )}
@@ -306,83 +314,48 @@ export default function Post({ post }) {
 const overlay = { position: 'absolute', backgroundColor: 'rgba(0,0,0,0.5)' }
 const st = StyleSheet.create({
   post: { overflow: 'hidden', gap: 0 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
-  dim: { fontSize: fs.xs, color: colors.textDim },
+  tiny: { fontSize: 10 },
 
-  head: { flexDirection: 'row', alignItems: 'center', gap: space[3], padding: space[4] },
   who: { flex: 1, minWidth: 0, gap: 2 },
   handle: { fontSize: fs.xs, color: colors.textDim, fontWeight: fw.regular },
-  typeTag: {
-    fontSize: 10, fontWeight: fw.semibold, letterSpacing: 0.7, color: colors.accent, backgroundColor: colors.accentSoft,
-    paddingVertical: 1, paddingHorizontal: 6, borderRadius: radius.pill, overflow: 'hidden',
-  },
+  typeTag: { fontSize: 10, backgroundColor: colors.accentSoft, paddingVertical: 1, paddingHorizontal: 6, borderRadius: radius.pill, overflow: 'hidden' },
 
   body: { paddingHorizontal: space[4], paddingBottom: space[3], gap: space[2] },
-  title: { fontSize: fs.lg, fontWeight: fw.semibold, color: colors.text },
-  text: { color: colors.text, fontSize: fs.md, lineHeight: 24 },
 
   play: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   arrow: { ...overlay, top: '50%', marginTop: -16, width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  arrowText: { color: '#fff', fontSize: 22, lineHeight: 24, marginTop: -2 },
-  counter: {
-    ...overlay, top: space[3], right: space[3], color: '#fff', fontSize: fs.xs, fontWeight: fw.medium,
-    paddingVertical: 2, paddingHorizontal: 8, borderRadius: radius.pill, overflow: 'hidden',
-  },
-  dots: { position: 'absolute', bottom: space[3], left: 0, right: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 5 },
+  arrowText: { fontSize: 22, lineHeight: 24, marginTop: -2 },
+  counter: { ...overlay, top: space[3], right: space[3], paddingVertical: 2, paddingHorizontal: 8, borderRadius: radius.pill, overflow: 'hidden' },
+  dots: { position: 'absolute', bottom: space[3], left: 0, right: 0, gap: 5 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.38)' },
   dotActive: { width: 18, backgroundColor: '#fff' },
 
   section: { padding: space[4], borderTopWidth: 1, borderTopColor: colors.border, gap: space[3] },
   stats: { flexDirection: 'row', flexWrap: 'wrap', columnGap: space[6], rowGap: space[3] },
-  statV: { fontSize: fs.lg, fontWeight: fw.bold, color: colors.text },
-  statL: { fontSize: fs.xs, color: colors.textDim, textTransform: 'uppercase', letterSpacing: 0.7 },
 
   detailsToggle: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingVertical: space[3], paddingHorizontal: space[4], borderTopWidth: 1, borderTopColor: colors.border,
   },
-  detailsText: { color: colors.textDim, fontSize: fs.xs, textTransform: 'uppercase', letterSpacing: 0.6 },
-
-  chartHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  chartTitle: { fontSize: fs.xs, fontWeight: fw.semibold, textTransform: 'uppercase', letterSpacing: 0.8, color: colors.textDim },
 
   splits: { flexDirection: 'row', alignItems: 'flex-end', gap: space[2], height: 84 },
   split: { flex: 1, minWidth: 0, height: '100%', alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
   splitCol: { width: '100%', maxWidth: 28, backgroundColor: colors.surface2, borderTopLeftRadius: 4, borderTopRightRadius: 4 },
-  splitPace: { fontSize: 10, fontWeight: fw.semibold, color: colors.accent },
-  splitKm: { fontSize: 10, color: colors.textDim },
 
   hrStrip: { flexDirection: 'row', gap: 2, height: 12, borderRadius: radius.pill, overflow: 'hidden' },
-  hrLegend: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3] },
   hrDot: { width: 8, height: 8, borderRadius: 4 },
-  hrZ: { fontSize: fs.xs, fontWeight: fw.semibold, color: colors.textMuted },
 
-  exName: { flex: 1, minWidth: 0, fontSize: fs.sm, fontWeight: fw.medium, color: colors.text },
-  pr: {
-    fontSize: 10, fontWeight: fw.bold, letterSpacing: 0.5, color: colors.accentInk, backgroundColor: colors.accent,
-    paddingVertical: 1, paddingHorizontal: 5, borderRadius: radius.pill, overflow: 'hidden',
-  },
+  pr: { fontSize: 10, letterSpacing: 0.5, backgroundColor: colors.accent, paddingVertical: 1, paddingHorizontal: 5, borderRadius: radius.pill, overflow: 'hidden' },
   track: { height: 4, backgroundColor: colors.surface2, borderRadius: radius.pill, overflow: 'hidden' },
   bar: { height: '100%', backgroundColor: colors.textDim, borderRadius: radius.pill },
 
-  actions: { flexDirection: 'row', gap: space[2], paddingVertical: space[2], paddingHorizontal: space[4], borderTopWidth: 1, borderTopColor: colors.border },
+  actions: { paddingVertical: space[2], paddingHorizontal: space[4], borderTopWidth: 1, borderTopColor: colors.border },
   btn: { flexDirection: 'row', alignItems: 'center', gap: space[2], paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.md },
-  btnIcon: { fontSize: fs.md },
-  btnCount: { fontSize: fs.sm, fontWeight: fw.medium, color: colors.textMuted },
 
   comments: { gap: space[2], paddingVertical: space[3], paddingHorizontal: space[4], borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bgElevated },
-  comment: { flexDirection: 'row', alignItems: 'flex-start', gap: space[2] },
-  bubble: {
-    flex: 1, backgroundColor: colors.surface2, borderRadius: radius.md, overflow: 'hidden',
-    paddingVertical: space[2], paddingHorizontal: space[3], fontSize: fs.sm,
-  },
-  commentName: { fontWeight: fw.semibold, color: colors.text },
-  commentText: { color: colors.textMuted },
-  more: { color: colors.textDim, fontSize: fs.sm, paddingVertical: space[1] },
+  bubble: { flex: 1, backgroundColor: colors.surface2, borderRadius: radius.md, overflow: 'hidden', paddingVertical: space[2], paddingHorizontal: space[3] },
   commentInput: {
     flex: 1, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill,
     paddingVertical: space[2], paddingHorizontal: space[3], color: colors.text, fontSize: fs.sm,
   },
-  submit: { backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: space[2], paddingHorizontal: space[3] },
-  submitText: { color: colors.accentInk, fontSize: fs.sm, fontWeight: fw.semibold },
 })

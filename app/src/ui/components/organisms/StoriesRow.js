@@ -1,5 +1,6 @@
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { colors, fs, space } from '@/ui/theme'
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { colors, space } from '@/ui/theme'
+import Text from '../atoms/Text'
 
 export default function StoriesRow({ stories, showAdd = false, onOpen }) {
   return (
@@ -7,8 +8,8 @@ export default function StoriesRow({ stories, showAdd = false, onOpen }) {
       {showAdd && (
         // ponytail: "New" story is a dead button, like the original.
         <Pressable style={st.story}>
-          <View style={st.add}><Text style={st.addText}>+</Text></View>
-          <Text style={st.label} numberOfLines={1}>New</Text>
+          <View style={st.add}><Text variant="muted" style={{ fontSize: 24 }}>+</Text></View>
+          <Text variant="dim" color={colors.textMuted} align="center" style={st.label} numberOfLines={1}>New</Text>
         </Pressable>
       )}
       {stories.map((s, i) => (
@@ -17,7 +18,7 @@ export default function StoriesRow({ stories, showAdd = false, onOpen }) {
           <View style={[st.ring, s.seen && st.ringSeen]}>
             <Image source={{ uri: s.user.avatar }} style={st.avatar} />
           </View>
-          <Text style={st.label} numberOfLines={1}>{s.user.username}</Text>
+          <Text variant="dim" color={colors.textMuted} align="center" style={st.label} numberOfLines={1}>{s.user.username}</Text>
         </Pressable>
       ))}
     </ScrollView>
@@ -35,6 +36,5 @@ const st = StyleSheet.create({
     width: D, height: D, borderRadius: D / 2, alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surface, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.borderStrong,
   },
-  addText: { fontSize: 24, color: colors.textMuted },
-  label: { fontSize: fs.xs, color: colors.textMuted, textAlign: 'center', width: '100%' },
+  label: { width: '100%' },
 })

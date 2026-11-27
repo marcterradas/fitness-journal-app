@@ -1,17 +1,16 @@
 import { useState } from 'react'
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Link, router } from 'expo-router'
-import { AppHeader, Avatar, Card, Chip, Screen, Stat } from '@/ui/components/ui'
-import Post from '@/ui/components/Post'
-import TrainingSummary from '@/ui/components/TrainingSummary'
-import AchievementTile from '@/ui/components/AchievementTile'
+import {
+  AchievementTile, AppHeader, Avatar, Button, Card, Chip, IconButton, Input, Post, Row, Screen, Stat, Tabs, Text, Toast, TrainingSummary,
+} from '@/ui/components'
 import { currentUser, SEXES, bmi, bmiLabel, ageFrom } from '@/api/mock/data/user'
 import { TIERS, rankFromSets } from '@/domain/ranking'
 import { SPORT_TYPES, journalEntries } from '@/api/mock/data/workouts'
 import { userPosts } from '@/api/mock/data/social'
 import { achievementStats, achievementsFrom } from '@/domain/achievements'
 import { reviewedCount } from '@/api/mock/reviewsStore'
-import { colors, fs, fw, radius, space } from '@/ui/theme'
+import { colors, fs, radius, space } from '@/ui/theme'
 
 const EDITABLE = ['name', 'username', 'avatar', 'bio', 'location', 'birthDate', 'sex', 'heightCm', 'weightKg', 'primarySport']
 
@@ -83,27 +82,27 @@ export default function ProfileScreen() {
         <AppHeader />
 
         <Card padding="lg" style={{ gap: space[5] }}>
-          <View style={st.heroTop}>
+          <Row justify="space-between" align="flex-start">
             <Avatar src={user.avatar} size="xl" ring="accent" />
-            <View style={st.row}>
-              <Pressable style={st.editBtn} onPress={openEdit}><Text style={st.editText}>Edit profile</Text></Pressable>
-              <Pressable style={st.gear} onPress={() => router.push('/settings')} accessibilityLabel="Settings">
+            <Row wrap>
+              <Button variant="secondary" size="sm" onPress={openEdit}>Edit profile</Button>
+              <IconButton label="Settings" variant="filled" onPress={() => router.push('/settings')}>
                 <Text>⚙️</Text>
-              </Pressable>
-            </View>
-          </View>
+              </IconButton>
+            </Row>
+          </Row>
           <View style={{ gap: space[2] }}>
-            <Text style={st.name}>{user.name}</Text>
-            <Text style={st.handle}>@{user.username} · 📍 {user.location}</Text>
-            <Text style={st.bio}>{user.bio}</Text>
+            <Text variant="h1">{user.name}</Text>
+            <Text variant="muted" color={colors.textDim}>@{user.username} · 📍 {user.location}</Text>
+            <Text color={colors.textMuted}>{user.bio}</Text>
           </View>
 
           {/* Rank */}
-          <View style={[st.rank, { backgroundColor: rank.color + '1f', borderColor: rank.color + '59' }]}>
-            <Text style={st.rankIcon}>{rank.icon}</Text>
-            <View style={st.rankInfo}>
-              <Text style={[st.rankLabel, { color: rank.color }]}>{rank.label} {rank.division}</Text>
-              <Text style={st.rankSub}>
+          <Row gap={3} style={[st.rank, { backgroundColor: rank.color + '1f', borderColor: rank.color + '59' }]}>
+            <Text style={{ fontSize: 32 }}>{rank.icon}</Text>
+            <View style={{ flex: 1, gap: space[1] }}>
+              <Text weight="bold" color={rank.color}>{rank.label} {rank.division}</Text>
+              <Text variant="dim">
                 {rank.placement
                   ? `${rank.placement.done}/${rank.placement.required} sessions to get placed`
                   : `${rank.dots} DOTS · ${rank.total}kg total${rank.next ? ` · ${rank.toNext} to ${rank.next.label}` : ''}`}
@@ -119,46 +118,35 @@ export default function ProfileScreen() {
               })}
             </View>
             <Link href="/search?tab=ranking" style={[st.rankLink, { color: rank.color }]}>Leaderboard ›</Link>
-          </View>
+          </Row>
 
           {/* Achievement highlights, so awards read without switching tabs */}
-          <Pressable style={st.highlights} onPress={() => setTab('awards')}>
-            <View style={st.hlHead}>
-              <Text style={st.hlTitle}>Achievements</Text>
-              <Text style={st.hlCount}>{rungs.done} of {rungs.total} tiers ›</Text>
-            </View>
-            <View style={st.hlRow}>
+          <Pressable style={st.highlights} onPress={() => setTab('awards')} accessibilityRole="button">
+            <Row align="baseline" justify="space-between">
+              <Text variant="overline">Achievements</Text>
+              <Text variant="dim" color={colors.accent}>{rungs.done} of {rungs.total} tiers ›</Text>
+            </Row>
+            <Row gap={1} wrap>
               {highlights.map(a => (
-                <Text key={a.id} style={st.hlChip}>{a.icon} {a.earnedLabel}</Text>
+                <Text key={a.id} variant="dim" weight="semibold" color={colors.accent} style={st.hlChip}>{a.icon} {a.earnedLabel}</Text>
               ))}
               {!!nextUp && (
-                <Text style={[st.hlChip, st.hlNext]}>🔜 {nextUp.label} · {Math.round(nextUp.progress * 100)}%</Text>
+                <Text variant="dim" weight="semibold" style={[st.hlChip, { backgroundColor: colors.surface }]}>
+                  🔜 {nextUp.label} · {Math.round(nextUp.progress * 100)}%
+                </Text>
               )}
-            </View>
+            </Row>
           </Pressable>
 
-          <View style={st.stats}>
+          <Row gap={3} justify="space-around" style={st.stats}>
             <Stat icon="✅" value={user.stats.workouts} label="workouts" />
             <Stat icon="👥" value={user.stats.followers} label="followers" />
             <Stat icon="↗️" value={user.stats.following} label="following" />
             <Stat icon="🔥" value={user.stats.streakDays} label="day streak" />
-          </View>
+          </Row>
         </Card>
 
-        {/* Tabs */}
-        <View style={st.tabs} accessibilityRole="tablist">
-          {tabs.map(t => (
-            <Pressable
-              key={t.id}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: tab === t.id }}
-              style={[st.tab, tab === t.id && st.tabActive]}
-              onPress={() => setTab(t.id)}
-            >
-              <Text style={[st.tabText, tab === t.id && { color: colors.accentInk }]}>{t.label}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
         {tab === 'posts' && (
           <View style={{ gap: space[4] }}>
@@ -169,15 +157,15 @@ export default function ProfileScreen() {
         {tab === 'stats' && (
           <>
             <Card padding="lg"><TrainingSummary /></Card>
-            <View>
-              <Text style={st.sectionH}>Body & training</Text>
+            <View style={{ gap: space[3] }}>
+              <Text variant="overline" color={colors.textMuted} style={{ fontSize: fs.sm }}>Body & training</Text>
               <Card padding="md" style={st.bodyGrid}>
                 {body.map(([v, u, l, isText]) => (
                   <View key={l} style={st.bodyItem}>
-                    <Text style={[st.bodyV, isText && { fontSize: fs.md }]}>
-                      {v}{!!u && <Text style={st.bodyU}> {u}</Text>}
+                    <Text variant={isText ? 'body' : 'h2'} weight="bold" style={st.nums}>
+                      {v}{!!u && <Text variant="muted" color={colors.textDim}> {u}</Text>}
                     </Text>
-                    <Text style={st.bodyL} numberOfLines={1}>{l}</Text>
+                    <Text variant="overline" weight="regular" numberOfLines={1}>{l}</Text>
                   </View>
                 ))}
               </Card>
@@ -187,34 +175,34 @@ export default function ProfileScreen() {
 
         {tab === 'awards' && (
           <View style={{ gap: space[4] }}>
-            <View style={st.achHead}>
-              <Text style={[st.sectionH, { marginBottom: 0 }]}>Achievements</Text>
-              <Text style={st.dim}>{rungs.done} of {rungs.total} tiers cleared</Text>
-            </View>
+            <Row gap={3} justify="space-between">
+              <Text variant="overline" color={colors.textMuted} style={{ fontSize: fs.sm }}>Achievements</Text>
+              <Text variant="dim" style={st.nums}>{rungs.done} of {rungs.total} tiers cleared</Text>
+            </Row>
 
             {!!nextUp && (
               <Card padding="md" style={st.next}>
                 <Text style={{ fontSize: 24 }}>{nextUp.icon}</Text>
                 <View style={{ flex: 1, gap: space[2] }}>
-                  <Text style={st.nextLabel}>Next up · {nextUp.label}</Text>
+                  <Text variant="small" weight="semibold">Next up · {nextUp.label}</Text>
                   <View style={st.lp}><View style={{ height: '100%', width: `${nextUp.progress * 100}%`, backgroundColor: colors.accent }} /></View>
                 </View>
-                <Text style={st.dim}>{nextUp.valueLabel}</Text>
+                <Text variant="dim" style={st.nums}>{nextUp.valueLabel}</Text>
               </Card>
             )}
 
-            <View style={st.row}>
+            <Row wrap>
               <Chip size="sm" active={achFilter === 'all'} onPress={() => setAchFilter('all')}>All</Chip>
               <Chip size="sm" active={achFilter === 'earned'} onPress={() => setAchFilter('earned')}>Earned</Chip>
               <Chip size="sm" active={achFilter === 'locked'} onPress={() => setAchFilter('locked')}>In progress</Chip>
-            </View>
+            </Row>
 
             {groups.map(g => (
               <View key={g} style={{ gap: space[2] }}>
-                <Text style={st.groupH}>{g}</Text>
-                <View style={st.achGrid}>
+                <Text variant="overline">{g}</Text>
+                <Row wrap align="stretch">
                   {achShown.filter(a => a.group === g).map(a => <AchievementTile key={a.id} a={a} style={st.tile} />)}
-                </View>
+                </Row>
               </View>
             ))}
           </View>
@@ -229,144 +217,103 @@ export default function ProfileScreen() {
             {!!form && (
               <ScrollView contentContainerStyle={{ gap: space[3] }} keyboardShouldPersistTaps="handled">
                 <View style={st.handleBar} />
-                <View style={st.sheetHead}>
+                <Row gap={3} justify="space-between" align="flex-start">
                   <View>
-                    <Text style={st.eyebrow}>Profile</Text>
-                    <Text style={st.sheetTitle}>Edit profile</Text>
+                    <Text variant="overline" weight="medium">Profile</Text>
+                    <Text variant="h2" style={{ marginTop: 2 }}>Edit profile</Text>
                   </View>
-                  <Pressable style={st.close} onPress={() => setForm(null)} accessibilityLabel="Close">
-                    <Text style={{ color: colors.text, fontSize: fs.lg }}>×</Text>
-                  </Pressable>
-                </View>
+                  <IconButton icon="close" label="Close" size={32} variant="filled" onPress={() => setForm(null)} />
+                </Row>
 
-                <View style={st.row}>
+                <Row wrap>
                   <Avatar src={form.avatar} size="lg" ring="accent" />
                   <Field label="Avatar URL" value={form.avatar} onChangeText={set('avatar')} placeholder="https://…" autoCapitalize="none" />
-                </View>
+                </Row>
 
-                <View style={st.fieldRow}>
+                <Row gap={3} wrap align="flex-start">
                   <Field label="Name" value={form.name} onChangeText={set('name')} />
                   <Field label="Username" value={form.username} onChangeText={set('username')} autoCapitalize="none" />
-                </View>
+                </Row>
 
                 <Field label="Bio" value={form.bio} onChangeText={set('bio')} multiline placeholder="What are you training for?" />
 
-                <View style={st.fieldRow}>
+                <Row gap={3} wrap align="flex-start">
                   <Field label="Location" value={form.location} onChangeText={set('location')} />
                   {/* ponytail: plain YYYY-MM-DD text, no date picker (would need a dep) */}
                   <Field label="Date of birth" value={form.birthDate} onChangeText={set('birthDate')} placeholder="YYYY-MM-DD" />
-                </View>
+                </Row>
 
-                <View style={st.fieldRow}>
+                <Row gap={3} wrap align="flex-start">
                   <Field label="Height (cm)" value={form.heightCm} onChangeText={set('heightCm')} keyboardType="numeric" />
                   <Field label="Weight (kg)" value={form.weightKg} onChangeText={set('weightKg')} keyboardType="decimal-pad" />
                   <Field label="Sessions / week" value={form.weeklyGoal} onChangeText={set('weeklyGoal')} keyboardType="numeric" />
-                </View>
+                </Row>
 
                 <View style={st.field}>
-                  <Text style={st.fieldLabel}>Main sport</Text>
-                  <View style={st.chips}>
+                  <Text variant="label">Main sport</Text>
+                  <Row wrap>
                     {SPORT_TYPES.map(sp => (
                       <Chip key={sp.id} size="sm" active={form.primarySport === sp.id} onPress={() => set('primarySport')(sp.id)}>
                         {sp.emoji} {sp.label}
                       </Chip>
                     ))}
-                  </View>
+                  </Row>
                 </View>
 
                 <View style={st.field}>
-                  <Text style={st.fieldLabel}>Sex</Text>
-                  <View style={st.chips}>
+                  <Text variant="label">Sex</Text>
+                  <Row wrap>
                     {SEXES.map(sx => (
                       <Chip key={sx.id} size="sm" active={form.sex === sx.id} onPress={() => set('sex')(sx.id)}>{sx.label}</Chip>
                     ))}
-                  </View>
+                  </Row>
                 </View>
 
-                <Text style={st.hint}>BMI preview: {formBmi ? formBmi.toFixed(1) : '—'} · {bmiLabel(formBmi)}</Text>
+                <Text variant="muted" style={st.hint}>BMI preview: {formBmi ? formBmi.toFixed(1) : '—'} · {bmiLabel(formBmi)}</Text>
 
-                <View style={st.actions}>
-                  <Pressable style={st.sheetBtn} onPress={() => setForm(null)}>
-                    <Text style={st.sheetBtnText}>Cancel</Text>
-                  </Pressable>
-                  <Pressable style={[st.sheetBtn, st.sheetBtnPrimary, !canSave && { opacity: 0.5 }]} disabled={!canSave} onPress={saveProfile}>
-                    <Text style={[st.sheetBtnText, { color: colors.accentInk }]}>Save changes</Text>
-                  </Pressable>
-                </View>
+                <Row style={{ marginTop: space[2] }}>
+                  <Button variant="secondary" onPress={() => setForm(null)} style={{ flex: 1 }}>Cancel</Button>
+                  <Button disabled={!canSave} onPress={saveProfile} style={{ flex: 1 }}>Save changes</Button>
+                </Row>
               </ScrollView>
             )}
           </Pressable>
         </Pressable>
       </Modal>
 
-      {!!toast && <View style={st.toast} pointerEvents="none"><Text style={st.toastText}>{toast}</Text></View>}
+      <Toast message={toast} />
     </View>
   )
 }
 
-function Field({ label, style, ...props }) {
+// Input that shares a wrapping row with its siblings.
+function Field(props) {
   return (
     <View style={st.field}>
-      <Text style={st.fieldLabel}>{label}</Text>
-      <TextInput
-        placeholderTextColor={colors.textDim}
-        style={[st.input, props.multiline && { minHeight: 60, textAlignVertical: 'top' }, style]}
-        {...props}
-      />
+      <Input {...props} style={props.multiline && { minHeight: 60, textAlignVertical: 'top' }} />
     </View>
   )
 }
 
 const st = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: space[2], flexWrap: 'wrap' },
-  dim: { fontSize: fs.xs, color: colors.textDim, fontVariant: ['tabular-nums'] },
-  sectionH: { fontSize: fs.sm, fontWeight: fw.semibold, color: colors.textMuted, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: space[3] },
+  nums: { fontVariant: ['tabular-nums'] },
+  stats: { paddingTop: space[4], borderTopWidth: 1, borderTopColor: colors.border },
 
-  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  editBtn: { paddingVertical: space[2], paddingHorizontal: space[4], backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill },
-  editText: { color: colors.text, fontSize: fs.sm, fontWeight: fw.medium },
-  gear: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  name: { color: colors.text, fontSize: fs.xxl, fontWeight: fw.bold, letterSpacing: -0.5 },
-  handle: { color: colors.textDim, fontSize: fs.sm },
-  bio: { color: colors.textMuted, fontSize: fs.md },
-  stats: { flexDirection: 'row', justifyContent: 'space-around', gap: space[3], paddingTop: space[4], borderTopWidth: 1, borderTopColor: colors.border },
-
-  rank: { flexDirection: 'row', alignItems: 'center', gap: space[3], paddingVertical: space[3], paddingHorizontal: space[4], borderWidth: 1, borderRadius: radius.md },
-  rankIcon: { fontSize: 32 },
-  rankInfo: { flex: 1, gap: space[1] },
-  rankLabel: { fontWeight: fw.bold, fontSize: fs.md },
-  rankSub: { fontSize: fs.xs, color: colors.textDim },
+  rank: { paddingVertical: space[3], paddingHorizontal: space[4], borderWidth: 1, borderRadius: radius.md },
   lp: { height: 4, borderRadius: 999, backgroundColor: colors.surface2, overflow: 'hidden' },
   // ponytail: tier pips hidden below ~400px would need useWindowDimensions; they just wrap instead
   pips: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, maxWidth: 56 },
   pip: { width: 10, height: 10, borderRadius: 5, borderWidth: 1 },
-  rankLink: { fontSize: fs.xs, fontWeight: fw.semibold },
+  rankLink: { fontSize: fs.xs, fontWeight: '600' },
 
   highlights: { gap: space[2], padding: space[3], backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md },
-  hlHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space[2] },
-  hlTitle: { fontSize: fs.xs, fontWeight: fw.semibold, textTransform: 'uppercase', letterSpacing: 0.8, color: colors.textDim },
-  hlCount: { fontSize: fs.xs, color: colors.accent },
-  hlRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space[1] },
-  hlChip: { paddingVertical: 2, paddingHorizontal: 8, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: colors.accentSoft, color: colors.accent, fontSize: 11, fontWeight: fw.semibold },
-  hlNext: { backgroundColor: colors.surface, color: colors.textDim },
-
-  tabs: { flexDirection: 'row', gap: space[1], padding: 4, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill },
-  tab: { flex: 1, padding: space[2], borderRadius: radius.pill, alignItems: 'center' },
-  tabActive: { backgroundColor: colors.accent },
-  tabText: { color: colors.textMuted, fontSize: fs.sm, fontWeight: fw.semibold },
+  hlChip: { paddingVertical: 2, paddingHorizontal: 8, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: colors.accentSoft, fontSize: 11 },
 
   bodyGrid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space[4], columnGap: 0 },
   bodyItem: { width: '33.33%', gap: 2, paddingRight: space[2] },
-  bodyV: { color: colors.text, fontSize: fs.xl, fontWeight: fw.bold, fontVariant: ['tabular-nums'] },
-  bodyU: { fontSize: fs.sm, color: colors.textDim, fontWeight: fw.regular },
-  bodyL: { fontSize: fs.xs, color: colors.textDim, textTransform: 'uppercase', letterSpacing: 0.6 },
 
-  achHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[3] },
-  groupH: { fontSize: fs.xs, fontWeight: fw.semibold, textTransform: 'uppercase', letterSpacing: 0.8, color: colors.textDim },
-  achGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   tile: { flexBasis: 100, flexGrow: 1, maxWidth: '33%' },
   next: { flexDirection: 'row', alignItems: 'center', gap: space[3] },
-  nextLabel: { color: colors.text, fontSize: fs.sm, fontWeight: fw.semibold },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end', alignItems: 'center' },
   panel: {
@@ -375,21 +322,6 @@ const st = StyleSheet.create({
     paddingTop: space[4], paddingHorizontal: space[5], paddingBottom: space[6],
   },
   handleBar: { alignSelf: 'center', width: 40, height: 4, borderRadius: radius.pill, backgroundColor: colors.borderStrong, marginBottom: space[2] },
-  sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: space[3] },
-  eyebrow: { fontSize: fs.xs, textTransform: 'uppercase', letterSpacing: 0.7, color: colors.textDim, fontWeight: fw.medium },
-  sheetTitle: { fontSize: fs.xl, fontWeight: fw.bold, color: colors.text, marginTop: 2 },
-  close: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   field: { gap: space[1], flex: 1, minWidth: 112 },
-  fieldRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3] },
-  fieldLabel: { fontSize: fs.xs, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.7, fontWeight: fw.medium },
-  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, color: colors.text, padding: space[3], fontSize: fs.sm },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
-  hint: { fontSize: fs.sm, color: colors.textMuted, backgroundColor: colors.surface, paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.md, overflow: 'hidden', fontVariant: ['tabular-nums'] },
-  actions: { flexDirection: 'row', gap: space[2], marginTop: space[2] },
-  sheetBtn: { flex: 1, padding: space[3], borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-  sheetBtnPrimary: { backgroundColor: colors.accent, borderColor: colors.accent },
-  sheetBtnText: { color: colors.textMuted, fontSize: fs.md, fontWeight: fw.semibold },
-
-  toast: { position: 'absolute', bottom: space[3], alignSelf: 'center', backgroundColor: colors.text, paddingVertical: space[3], paddingHorizontal: space[5], borderRadius: radius.pill },
-  toastText: { color: colors.bg, fontWeight: fw.semibold, fontSize: fs.sm },
+  hint: { backgroundColor: colors.surface, paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.md, overflow: 'hidden', fontVariant: ['tabular-nums'] },
 })

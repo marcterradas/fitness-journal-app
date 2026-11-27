@@ -1,6 +1,10 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { colors, fs, fw, radius, space } from '@/ui/theme'
+import Icon from '../atoms/Icon'
+import IconButton from '../atoms/IconButton'
+import Row from '../atoms/Row'
+import Text from '../atoms/Text'
 
 // One exercise with its set rows (old ExerciseCard.vue).
 // Vue mutated the prop in place (v-model on exercise.name / set.weight); React can't, so field
@@ -22,9 +26,9 @@ export default function ExerciseCard({ exercise, index, focus = false, onToggleS
 
   return (
     <View style={[st.card, done && st.cardDone, focus && st.cardFocus]}>
-      <View style={st.head}>
+      <Row gap={3} style={{ padding: space[4] }}>
         <View style={[st.index, done && st.indexDone]}>
-          <Text style={[st.indexText, done && { color: colors.accentInk }]}>{index + 1}</Text>
+          <Text variant="muted" weight="bold" color={done ? colors.accentInk : undefined}>{index + 1}</Text>
         </View>
         <Pressable style={st.titleWrap} onPress={toggleCollapsed}>
           {editingName ? (
@@ -39,35 +43,35 @@ export default function ExerciseCard({ exercise, index, focus = false, onToggleS
             />
           ) : (
             <Pressable onPress={() => setEditingName(true)} accessibilityHint="Rename exercise">
-              <Text style={[st.title, focus && { fontSize: fs.xl }]}>
-                {exercise.name} <Text style={st.pencil}>✎</Text>
+              <Text variant="h3" weight="semibold" style={focus && { fontSize: fs.xl }}>
+                {exercise.name} <Text variant="dim">✎</Text>
               </Text>
             </Pressable>
           )}
-          {!!exercise.note && <Text style={st.note}>{exercise.note}</Text>}
+          {!!exercise.note && <Text variant="dim" style={{ marginTop: 2 }}>{exercise.note}</Text>}
         </Pressable>
-        <View style={st.meta}>
-          <Text style={[st.progress, done && { color: colors.accent }]}>{progress}%</Text>
-          <Pressable style={st.headBtn} onPress={onRemove} accessibilityLabel="Remove exercise">
-            <Text style={st.headBtnText}>×</Text>
-          </Pressable>
+        <Row>
+          <Text variant="muted" weight="semibold" align="right" color={done ? colors.accent : undefined} style={st.progress}>{progress}%</Text>
+          <IconButton label="Remove exercise" size={28} onPress={onRemove}>
+            <Icon name="close" size={16} color={colors.textDim} />
+          </IconButton>
           {!focus && (
-            <Pressable style={st.headBtn} onPress={toggleCollapsed} accessibilityLabel={collapsed ? 'Expand' : 'Collapse'}>
-              <Text style={st.headBtnText}>{collapsed ? '▾' : '▴'}</Text>
-            </Pressable>
+            <IconButton label={collapsed ? 'Expand' : 'Collapse'} size={28} onPress={toggleCollapsed}>
+              <Icon name={collapsed ? 'chevron-down' : 'chevron-up'} size={16} color={colors.textDim} />
+            </IconButton>
           )}
-        </View>
-      </View>
+        </Row>
+      </Row>
 
       {showBody && (
         <View style={st.body}>
-          <View style={st.setsHead}>
-            <Text style={[st.col, st.colNum]}>#</Text>
-            <Text style={[st.col, st.colFlex]}>Weight</Text>
-            <Text style={[st.col, st.colFlex]}>Reps</Text>
-            <Text style={[st.col, st.colRpe]}>@ RPE</Text>
+          <Row gap={1} style={{ paddingHorizontal: space[3] }}>
+            <Text variant="overline" weight="medium" align="center" style={st.colNum}>#</Text>
+            <Text variant="overline" weight="medium" style={st.colFlex}>Weight</Text>
+            <Text variant="overline" weight="medium" style={st.colFlex}>Reps</Text>
+            <Text variant="overline" weight="medium" align="center" style={st.colRpe}>@ RPE</Text>
             <View style={st.colAct} />
-          </View>
+          </Row>
 
           {sets.map((set, si) => {
             const last = exercise.lastWeek?.[si]
@@ -75,8 +79,8 @@ export default function ExerciseCard({ exercise, index, focus = false, onToggleS
             return (
               <View key={set.id} style={{ gap: space[2] }}>
                 <View style={[st.set, focus && { backgroundColor: colors.surface }, set.completed && st.setDone]}>
-                  <Pressable style={[st.num, set.completed && st.numDone]} onPress={() => onToggleSet?.(si)}>
-                    <Text style={[st.numText, set.completed && { color: colors.accentInk }]}>{set.completed ? '✓' : si + 1}</Text>
+                  <Pressable style={[st.num, set.completed && st.numDone]} onPress={() => onToggleSet?.(si)} accessibilityRole="checkbox" accessibilityState={{ checked: !!set.completed }} accessibilityLabel={`Set ${si + 1}`}>
+                    <Text variant="small" weight="bold" color={set.completed ? colors.accentInk : undefined}>{set.completed ? '✓' : si + 1}</Text>
                   </Pressable>
 
                   <View style={[st.field, st.colFlex, { backgroundColor: fieldBg }]}>
@@ -87,7 +91,7 @@ export default function ExerciseCard({ exercise, index, focus = false, onToggleS
                       editable={!set.completed}
                       style={[st.input, set.completed && st.inputDisabled]}
                     />
-                    <Text style={st.unit}>kg</Text>
+                    <Text variant="dim" weight="medium">kg</Text>
                   </View>
                   <View style={[st.field, st.colFlex, { backgroundColor: fieldBg }]}>
                     <TextInput
@@ -99,7 +103,7 @@ export default function ExerciseCard({ exercise, index, focus = false, onToggleS
                     />
                   </View>
                   <View style={[st.field, st.colRpe, { backgroundColor: fieldBg, justifyContent: 'center' }]}>
-                    <Text style={st.unit}>@</Text>
+                    <Text variant="dim" weight="medium">@</Text>
                     <TextInput
                       value={String(set.rpe)}
                       onChangeText={t => editSet(si, { rpe: t })}
@@ -109,26 +113,26 @@ export default function ExerciseCard({ exercise, index, focus = false, onToggleS
                     />
                   </View>
 
-                  <View style={[st.colAct, st.act]}>
-                    <Pressable style={st.iconBtn} onPress={() => setOpenComment(o => (o === si ? null : si))} accessibilityLabel="Add note">
-                      <Text style={{ fontSize: fs.sm, opacity: set.comment ? 1 : 0.6 }}>💬</Text>
-                    </Pressable>
-                    <Pressable style={st.iconBtn} onPress={() => onRemoveSet?.(si)} accessibilityLabel="Remove set">
-                      <Text style={st.headBtnText}>×</Text>
-                    </Pressable>
-                  </View>
+                  <Row gap={0} style={st.colAct}>
+                    <IconButton label="Add note" size={30} onPress={() => setOpenComment(o => (o === si ? null : si))}>
+                      <Text variant="small" style={{ opacity: set.comment ? 1 : 0.6 }}>💬</Text>
+                    </IconButton>
+                    <IconButton label="Remove set" size={30} onPress={() => onRemoveSet?.(si)}>
+                      <Icon name="close" size={16} color={colors.textDim} />
+                    </IconButton>
+                  </Row>
                 </View>
 
                 {!!last && (
-                  <View style={st.lastweek}>
-                    <Text style={st.lastLbl}>LAST WEEK</Text>
-                    <Text style={st.lastData}>
-                      {last.weight}kg × {last.reps} <Text style={{ color: colors.textDim }}>@{last.rpe}</Text>
+                  <Row style={st.lastweek}>
+                    <Text variant="overline" weight="medium">Last week</Text>
+                    <Text variant="dim" weight="medium" color={colors.textMuted} style={st.tabular}>
+                      {last.weight}kg × {last.reps} <Text variant="dim">@{last.rpe}</Text>
                     </Text>
-                    <Pressable style={st.copy} onPress={() => onCopyLast?.(si)}>
-                      <Text style={st.copyText}>Copy ↺</Text>
+                    <Pressable style={st.copy} onPress={() => onCopyLast?.(si)} accessibilityRole="button">
+                      <Text variant="dim" color={colors.textMuted}>Copy ↺</Text>
                     </Pressable>
-                  </View>
+                  </Row>
                 )}
 
                 {openComment === si && (
@@ -146,8 +150,8 @@ export default function ExerciseCard({ exercise, index, focus = false, onToggleS
             )
           })}
 
-          <Pressable style={st.addSet} onPress={onAddSet}>
-            <Text style={st.addSetText}>+ Add set</Text>
+          <Pressable style={st.addSet} onPress={onAddSet} accessibilityRole="button">
+            <Text variant="muted" weight="semibold">+ Add set</Text>
           </Pressable>
         </View>
       )}
@@ -160,48 +164,31 @@ const st = StyleSheet.create({
   cardDone: { borderColor: colors.accent, backgroundColor: '#1c2324' },
   cardFocus: { backgroundColor: colors.bgElevated },
 
-  head: { flexDirection: 'row', alignItems: 'center', gap: space[3], padding: space[4] },
   index: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface2, alignItems: 'center', justifyContent: 'center' },
   indexDone: { backgroundColor: colors.accent },
-  indexText: { color: colors.textMuted, fontSize: fs.sm, fontWeight: fw.bold },
   titleWrap: { flex: 1, minWidth: 0 },
-  title: { color: colors.text, fontSize: fs.lg, fontWeight: fw.semibold },
-  pencil: { color: colors.textDim, fontSize: fs.xs },
   nameInput: { backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.accent, color: colors.text, fontSize: fs.lg, fontWeight: fw.semibold, paddingVertical: space[1], paddingHorizontal: space[2], borderRadius: radius.sm },
-  note: { color: colors.textDim, fontSize: fs.xs, marginTop: 2 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
-  progress: { color: colors.textMuted, fontSize: fs.sm, fontWeight: fw.semibold, minWidth: 40, textAlign: 'right', fontVariant: ['tabular-nums'] },
-  headBtn: { width: 28, height: 28, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
-  headBtnText: { color: colors.textDim, fontSize: fs.md },
+  progress: { minWidth: 40, fontVariant: ['tabular-nums'] },
 
   body: { gap: space[2], paddingHorizontal: space[3], paddingBottom: space[4] },
-  setsHead: { flexDirection: 'row', alignItems: 'center', gap: space[1], paddingHorizontal: space[3] },
-  col: { color: colors.textDim, fontSize: fs.xs, fontWeight: fw.medium, textTransform: 'uppercase', letterSpacing: 0.7 },
-  colNum: { width: 36, textAlign: 'center' },
+  colNum: { width: 36 },
   colFlex: { flex: 1 },
-  colRpe: { width: 64, textAlign: 'center' },
+  colRpe: { width: 64 },
   colAct: { width: 64 },
 
   set: { flexDirection: 'row', alignItems: 'center', gap: space[1], backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingVertical: space[2], paddingHorizontal: space[3] },
   setDone: { backgroundColor: '#1f2a1c', borderColor: colors.accent },
   num: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   numDone: { backgroundColor: colors.accent, borderColor: colors.accent },
-  numText: { color: colors.text, fontSize: fs.sm, fontWeight: fw.bold },
   field: { flexDirection: 'row', alignItems: 'center', gap: space[1], borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, paddingHorizontal: space[2] },
   input: { flex: 1, minWidth: 0, color: colors.text, fontSize: fs.md, fontWeight: fw.semibold, paddingVertical: space[2], textAlign: 'center', fontVariant: ['tabular-nums'] },
   inputDisabled: { color: colors.textMuted },
-  unit: { color: colors.textDim, fontSize: fs.xs, fontWeight: fw.medium },
-  act: { flexDirection: 'row', gap: 2 },
-  iconBtn: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: radius.sm },
 
-  lastweek: { flexDirection: 'row', alignItems: 'center', gap: space[2], paddingLeft: 36 + space[3], paddingRight: space[3] },
-  lastLbl: { color: colors.textDim, fontSize: fs.xs, fontWeight: fw.medium, letterSpacing: 0.7 },
-  lastData: { color: colors.textMuted, fontSize: fs.xs, fontWeight: fw.medium, fontVariant: ['tabular-nums'] },
+  lastweek: { paddingLeft: 36 + space[3], paddingRight: space[3] },
+  tabular: { fontVariant: ['tabular-nums'] },
   copy: { marginLeft: 'auto', borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingVertical: 2, paddingHorizontal: space[2] },
-  copyText: { color: colors.textMuted, fontSize: fs.xs },
 
   comment: { marginHorizontal: space[3], backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, color: colors.text, paddingVertical: space[2], paddingHorizontal: space[3], fontSize: fs.sm, minHeight: 56, textAlignVertical: 'top' },
 
   addSet: { marginTop: space[1], borderWidth: 1, borderStyle: 'dashed', borderColor: colors.borderStrong, padding: space[3], borderRadius: radius.md, alignItems: 'center' },
-  addSetText: { color: colors.textMuted, fontWeight: fw.semibold, fontSize: fs.sm },
 })

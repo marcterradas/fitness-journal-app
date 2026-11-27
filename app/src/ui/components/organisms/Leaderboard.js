@@ -1,16 +1,21 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { Avatar, Card, Chip, UserLink } from '@/ui/components/ui'
-import RankInfo from '@/ui/components/RankInfo'
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import Avatar from '../atoms/Avatar'
+import Card from '../atoms/Card'
+import Chip from '../atoms/Chip'
+import Row from '../atoms/Row'
+import Text from '../atoms/Text'
+import RankInfo from './RankInfo'
+import UserLink from '../molecules/UserLink'
 import { TIERS, needsReview, tierFromDots } from '@/domain/ranking'
 import { POINTS_FORMULA, friendsBoard, globalBoard } from '@/api/mock/data/leaderboard'
-import { colors, fs, fw, radius, space } from '@/ui/theme'
+import { colors, fs, radius, space } from '@/ui/theme'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
 function Delta({ d }) {
   const color = d > 0 ? colors.success : d < 0 ? colors.danger : colors.textDim
-  return <Text style={[styles.delta, { color }]}>{d > 0 ? `▲${d}` : d < 0 ? `▼${-d}` : '–'}</Text>
+  return <Text variant="dim" color={color} style={styles.nums}>{d > 0 ? `▲${d}` : d < 0 ? `▼${-d}` : '–'}</Text>
 }
 
 export default function Leaderboard() {
@@ -24,12 +29,12 @@ export default function Leaderboard() {
   const meTier = tierFromDots(me.dots)
 
   return (
-    <View style={styles.root}>
-      <View style={styles.tabs}>
+    <View style={{ gap: space[4] }}>
+      <Row>
         <Chip active={tab === 'friends'} onPress={() => setTab('friends')}>👥 Friends</Chip>
         <Chip active={tab === 'global'} onPress={() => setTab('global')}>🌍 Global</Chip>
-        <Text style={[styles.dim, { marginLeft: 'auto' }]}>All-time · never resets</Text>
-      </View>
+        <Text variant="dim" style={{ marginLeft: 'auto' }}>All-time · never resets</Text>
+      </Row>
 
       {/* Podium: 2nd, 1st, 3rd */}
       <Card padding="lg" style={styles.podium}>
@@ -43,8 +48,8 @@ export default function Leaderboard() {
               <UserLink user={u} style={[styles.podiumName, u.me && { color: colors.accent }]}>
                 {u.me ? 'You' : u.name.split(' ')[0]}
               </UserLink>
-              <Text style={styles.podiumPts}>{u.points.toLocaleString()} pts</Text>
-              <Text style={styles.dim}>{t.icon} {t.label} {t.division}</Text>
+              <Text variant="small" weight="bold" style={styles.nums}>{u.points.toLocaleString()} pts</Text>
+              <Text variant="dim">{t.icon} {t.label} {t.division}</Text>
             </View>
           )
         })}
@@ -53,65 +58,65 @@ export default function Leaderboard() {
       {/* Rest of the board */}
       <Card padding="none" style={{ gap: 0, overflow: 'hidden' }}>
         {rest.map((u, i) => (
-          <View key={u.id} style={[styles.row, u.me && styles.rowMe]}>
-            <Text style={styles.pos}>{i + 4}</Text>
+          <Row key={u.id} gap={3} style={[styles.row, u.me && styles.rowMe]}>
+            <Text variant="small" weight="bold" color={colors.textDim} style={styles.pos}>{i + 4}</Text>
             <Avatar src={u.avatar} size="sm" />
             <View style={styles.who}>
               <Text numberOfLines={1}>
                 <UserLink user={u} style={{ fontSize: fs.sm }}>{u.me ? 'You' : u.name}</UserLink>
-                <Text style={{ fontSize: fs.xs }}> {tierFromDots(u.dots).icon}</Text>
+                <Text variant="dim"> {tierFromDots(u.dots).icon}</Text>
               </Text>
-              <Text style={styles.dim}>
-                <UserLink user={u} style={styles.dim}>@{u.username}</UserLink> · 🔥 {u.streak}d
+              <Text variant="dim">
+                <UserLink user={u} style={styles.handle}>@{u.username}</UserLink> · 🔥 {u.streak}d
               </Text>
             </View>
             <Delta d={u.delta} />
-            <Text style={styles.pts}>{u.points.toLocaleString()}</Text>
-          </View>
+            <Text weight="bold" style={styles.nums}>{u.points.toLocaleString()}</Text>
+          </Row>
         ))}
 
         {tab === 'global' && (
           <>
-            <Text style={styles.gap}>···</Text>
-            <View style={[styles.row, styles.rowMe, { borderBottomWidth: 0 }]}>
-              <Text style={styles.pos}>{me.rank.toLocaleString()}</Text>
+            <Text variant="dim" align="center" style={styles.gap}>···</Text>
+            <Row gap={3} style={[styles.row, styles.rowMe, { borderBottomWidth: 0 }]}>
+              <Text variant="small" weight="bold" color={colors.textDim} style={styles.pos}>{me.rank.toLocaleString()}</Text>
               <Avatar src={me.avatar} size="sm" />
               <View style={styles.who}>
-                <Text style={styles.name}>You <Text style={{ fontSize: fs.xs }}>{meTier.icon}</Text></Text>
-                <Text style={styles.dim}>
+                <Text variant="small" weight="semibold">You <Text variant="dim">{meTier.icon}</Text></Text>
+                <Text variant="dim">
                   top {Math.ceil((me.rank / globalBoard.totalAthletes) * 100)}% of {globalBoard.totalAthletes.toLocaleString()} athletes
                 </Text>
               </View>
               <Delta d={me.delta} />
-              <Text style={styles.pts}>{me.points.toLocaleString()}</Text>
-            </View>
+              <Text weight="bold" style={styles.nums}>{me.points.toLocaleString()}</Text>
+            </Row>
           </>
         )}
       </Card>
 
       {/* Tiers */}
       <Card>
-        <View style={styles.tiersHead}>
-          <Text style={styles.tiersTitle}>TIERS · STRENGTH SCORE</Text>
-          <Pressable onPress={() => setInfoOpen(true)}>
-            <Text style={styles.how}>How ranks work ›</Text>
+        <Row justify="space-between">
+          <Text variant="overline">Tiers · strength score</Text>
+          <Pressable onPress={() => setInfoOpen(true)} accessibilityRole="button">
+            <Text variant="link" style={{ fontSize: fs.xs }}>How ranks work ›</Text>
           </Pressable>
-        </View>
+        </Row>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2] }}>
           {TIERS.map(r => (
             <View key={r.id} style={[styles.tier, { borderColor: r.color + '59', backgroundColor: r.color + '14' }]}>
               <Text style={{ fontSize: 18 }}>{r.icon}</Text>
-              <Text style={{ fontSize: fs.xs, fontWeight: fw.semibold, color: r.color }}>
+              <Text variant="dim" weight="semibold" color={r.color}>
                 {r.label}{needsReview(r.id) ? ' 🎥' : ''}
               </Text>
-              <Text style={{ fontSize: 10, color: colors.textDim }}>{r.min}+</Text>
+              <Text variant="dim" style={{ fontSize: 10 }}>{r.min}+</Text>
             </View>
           ))}
         </ScrollView>
       </Card>
 
-      <Text style={styles.formula}>{POINTS_FORMULA}</Text>
-      <Text style={styles.formula}>
+      <Text variant="dim" align="center">{POINTS_FORMULA}</Text>
+      <Text variant="dim" align="center">
         Tier = best push + pull + legs 1RM, scaled to bodyweight &amp; sex (DOTS) · 🎥 from Diamond up, lifts are community-reviewed
       </Text>
 
@@ -121,27 +126,15 @@ export default function Leaderboard() {
 }
 
 const styles = StyleSheet.create({
-  root: { gap: space[4] },
-  tabs: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
-  dim: { fontSize: fs.xs, color: colors.textDim },
+  nums: { fontVariant: ['tabular-nums'] },
   podium: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: space[6] },
   spot: { alignItems: 'center', gap: space[1], minWidth: 0 },
   podiumName: { fontSize: fs.sm, maxWidth: 112 },
-  podiumPts: { color: colors.text, fontSize: fs.sm, fontWeight: fw.bold, fontVariant: ['tabular-nums'] },
-  row: {
-    flexDirection: 'row', alignItems: 'center', gap: space[3], paddingVertical: space[3], paddingHorizontal: space[4],
-    borderBottomWidth: 1, borderBottomColor: colors.border,
-  },
+  row: { paddingVertical: space[3], paddingHorizontal: space[4], borderBottomWidth: 1, borderBottomColor: colors.border },
   rowMe: { backgroundColor: colors.accentSoft, borderLeftWidth: 3, borderLeftColor: colors.accent },
-  pos: { minWidth: 32, textAlign: 'center', fontWeight: fw.bold, color: colors.textDim, fontSize: fs.sm, fontVariant: ['tabular-nums'] },
+  pos: { minWidth: 32, textAlign: 'center', fontVariant: ['tabular-nums'] },
   who: { flex: 1, minWidth: 0, gap: 2 },
-  name: { color: colors.text, fontWeight: fw.semibold, fontSize: fs.sm },
-  delta: { fontSize: fs.xs, fontVariant: ['tabular-nums'] },
-  pts: { color: colors.text, fontWeight: fw.bold, fontVariant: ['tabular-nums'] },
-  gap: { textAlign: 'center', color: colors.textDim, padding: space[1], letterSpacing: 4, borderBottomWidth: 1, borderBottomColor: colors.border },
-  tiersHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[2] },
-  tiersTitle: { fontSize: fs.xs, fontWeight: fw.semibold, letterSpacing: 0.8, color: colors.textDim },
-  how: { fontSize: fs.xs, fontWeight: fw.semibold, color: colors.accent },
+  handle: { fontSize: fs.xs, color: colors.textDim, fontWeight: 'normal' },
+  gap: { padding: space[1], letterSpacing: 4, borderBottomWidth: 1, borderBottomColor: colors.border },
   tier: { alignItems: 'center', gap: 2, paddingVertical: space[2], paddingHorizontal: space[3], borderWidth: 1, borderRadius: radius.md },
-  formula: { fontSize: fs.xs, color: colors.textDim, textAlign: 'center' },
 })

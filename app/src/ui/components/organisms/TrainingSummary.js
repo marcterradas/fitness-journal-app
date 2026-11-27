@@ -1,6 +1,8 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import { journalEntries, SPORT_TYPES, ymd } from '@/api/mock/data/workouts'
-import { colors, fs, fw, radius, space, sportColor } from '@/ui/theme'
+import { colors, radius, space, sportColor } from '@/ui/theme'
+import Row from '../atoms/Row'
+import Text from '../atoms/Text'
 
 const WEEKS = 12
 const DAY_LABELS = ['M', '', 'W', '', 'F', '', 'S']
@@ -50,15 +52,15 @@ export default function TrainingSummary() {
   const activeDays = grid.flat().filter(d => d.level).length
 
   return (
-    <View style={st.ts}>
+    <View style={{ gap: space[5] }}>
       <View style={st.block}>
-        <View style={st.head}>
-          <Text style={st.h}>Last {WEEKS} weeks</Text>
-          <Text style={st.meta}>{activeDays} active days</Text>
-        </View>
-        <View style={st.heat}>
+        <Row gap={3} align="baseline" justify="space-between">
+          <Text variant="overline" color={colors.textMuted}>Last {WEEKS} weeks</Text>
+          <Text variant="dim" style={st.nums}>{activeDays} active days</Text>
+        </Row>
+        <Row align="flex-start">
           <View style={st.col}>
-            {DAY_LABELS.map((l, i) => <Text key={i} style={st.day}>{l}</Text>)}
+            {DAY_LABELS.map((l, i) => <Text key={i} variant="dim" style={st.day}>{l}</Text>)}
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={st.grid}>
             {grid.map((week, w) => (
@@ -67,26 +69,26 @@ export default function TrainingSummary() {
               </View>
             ))}
           </ScrollView>
-        </View>
-        <View style={st.legend}>
-          <Text style={st.legendText}>Rest</Text>
+        </Row>
+        <Row gap={1}>
+          <Text variant="dim" style={st.tiny}>Rest</Text>
           {LEVEL_BG.map((bg, l) => <View key={l} style={[st.cell, { backgroundColor: bg }]} />)}
-          <Text style={st.legendText}>75+ min</Text>
-        </View>
+          <Text variant="dim" style={st.tiny}>75+ min</Text>
+        </Row>
       </View>
 
       <View style={st.block}>
-        <Text style={st.h}>Training split</Text>
+        <Text variant="overline" color={colors.textMuted}>Training split</Text>
         <View style={st.bar}>
           {split.map(sp => <View key={sp.id} style={{ width: `${sp.pct}%`, backgroundColor: sportColor(sp.id) }} />)}
         </View>
         <View style={st.splitLegend}>
           {split.map(sp => (
-            <View key={sp.id} style={st.item}>
+            <Row key={sp.id} style={st.item}>
               <View style={[st.dot, { backgroundColor: sportColor(sp.id) }]} />
-              <Text style={st.label}>{sp.label}</Text>
-              <Text style={st.pct}>{sp.pct}%</Text>
-            </View>
+              <Text variant="dim" color={colors.textMuted} style={{ flex: 1 }}>{sp.label}</Text>
+              <Text variant="dim" color={colors.text} style={st.nums}>{sp.pct}%</Text>
+            </Row>
           ))}
         </View>
       </View>
@@ -95,24 +97,15 @@ export default function TrainingSummary() {
 }
 
 const st = StyleSheet.create({
-  ts: { gap: space[5] },
   block: { gap: space[3] },
-  head: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: space[3] },
-  h: { fontSize: fs.xs, fontWeight: fw.semibold, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.7 },
-  meta: { fontSize: fs.xs, color: colors.textDim, fontVariant: ['tabular-nums'] },
-
-  heat: { flexDirection: 'row', gap: space[2] },
+  nums: { fontVariant: ['tabular-nums'] },
   col: { gap: 3 },
   grid: { gap: 3 },
-  day: { fontSize: 10, color: colors.textDim, height: 12, lineHeight: 12 },
+  tiny: { fontSize: 10 },
+  day: { fontSize: 10, height: 12, lineHeight: 12 },
   cell: { width: 12, height: 12, borderRadius: 3 },
-  legend: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  legendText: { fontSize: 10, color: colors.textDim },
-
   bar: { flexDirection: 'row', gap: 2, height: 10, borderRadius: radius.pill, overflow: 'hidden' },
   splitLegend: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space[2], columnGap: space[3] },
-  item: { flexDirection: 'row', alignItems: 'center', gap: space[2], minWidth: 130, flexGrow: 1, flexBasis: 130 },
+  item: { minWidth: 130, flexGrow: 1, flexBasis: 130 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  label: { flex: 1, fontSize: fs.xs, color: colors.textMuted },
-  pct: { fontSize: fs.xs, color: colors.text, fontVariant: ['tabular-nums'] },
 })

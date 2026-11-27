@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
-import { Card, Screen } from '@/ui/components/ui'
-import SportIcon from '@/ui/components/SportIcon'
-import ExerciseCard from '@/ui/components/ExerciseCard'
+import { Button, Card, ExerciseCard, IconButton, Row, Screen, SportIcon, Text } from '@/ui/components'
 import { useTimer } from '@/ui/hooks/useTimer'
 import { WEEKDAYS, weeklyTemplates } from '@/api/mock/data/templates'
-import { colors, fs, fw, radius, space } from '@/ui/theme'
+import { colors, radius, space } from '@/ui/theme'
 
 const REST_OPTIONS = [60, 90, 120, 180]
 
@@ -204,87 +202,68 @@ export default function WorkoutScreen() {
       <Screen style={{ gap: space[4], paddingBottom: restOpen ? 160 : space[10] }}>
         {mode === 'plan' ? (
           <>
-            <View style={st.head}>
-              <Pressable style={st.back} onPress={() => router.back()} accessibilityLabel="Back">
-                <Text style={st.backText}>←</Text>
-              </Pressable>
+            <Row>
+              <IconButton icon="back" label="Back" variant="filled" size={40} onPress={() => router.back()} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={st.eyebrow}>{today}</Text>
-                <Text style={st.title}>Today's workout</Text>
+                <Text variant="overline" weight="medium">{today}</Text>
+                <Text variant="h1">Today's workout</Text>
               </View>
-              <Pressable style={st.iconBtn} onPress={() => setPickerOpen(true)} accessibilityLabel="Templates">
-                <Text style={st.iconBtnText}>🗓</Text>
+              <Pressable style={st.iconBtn} onPress={() => setPickerOpen(true)} accessibilityRole="button" accessibilityLabel="Templates">
+                <Text>🗓</Text>
               </Pressable>
-              <Pressable style={st.iconBtn} onPress={share} accessibilityLabel="Share workout">
-                <Text style={st.iconBtnText}>↗</Text>
+              <Pressable style={st.iconBtn} onPress={share} accessibilityRole="button" accessibilityLabel="Share workout">
+                <Text>↗</Text>
               </Pressable>
-            </View>
+            </Row>
 
             <Card padding="md" style={st.summary}>
               <SportIcon sport={sport} size="md" />
-              <View style={st.sumItem}>
-                <Text style={st.sumV}>{completedCount}<Text style={{ color: colors.textDim }}> / </Text>{totalSets}</Text>
-                <Text style={st.sumL}>SETS</Text>
-              </View>
-              <View style={st.sumItem}>
-                <Text style={st.sumV}>{exercises.length}</Text>
-                <Text style={st.sumL}>EXERCISES</Text>
-              </View>
-              <View style={st.sumItem}>
-                <Text style={st.sumV}>{sessionRunning ? elapsed : totalVolume.toLocaleString()}</Text>
-                <Text style={st.sumL}>{sessionRunning ? 'ELAPSED' : 'KG VOLUME'}</Text>
-              </View>
+              <SumItem label="Sets">{completedCount}<Text variant="h2" color={colors.textDim}> / </Text>{totalSets}</SumItem>
+              <SumItem label="Exercises">{exercises.length}</SumItem>
+              <SumItem label={sessionRunning ? 'Elapsed' : 'kg volume'}>{sessionRunning ? elapsed : totalVolume.toLocaleString()}</SumItem>
               <ProgressBar pct={progressPct} />
             </Card>
 
             {exercises.length > 0 && (
-              <Pressable style={st.primary} onPress={startSession}>
-                <Text style={st.primaryText}>{sessionRunning ? `Back to session · ${elapsed}` : 'Start workout →'}</Text>
-              </Pressable>
+              <Button size="lg" style={st.primary} onPress={startSession}>
+                {sessionRunning ? `Back to session · ${elapsed}` : 'Start workout →'}
+              </Button>
             )}
 
             {exercises.map((ex, ei) => <ExerciseCard key={ex.id} {...cardProps(ex, ei, false)} />)}
 
-            <Pressable style={st.addExercise} onPress={addExercise}>
-              <Text style={st.addExerciseText}>+ Add exercise</Text>
+            <Pressable style={st.addExercise} onPress={addExercise} accessibilityRole="button">
+              <Text weight="semibold" color={colors.textMuted}>+ Add exercise</Text>
             </Pressable>
 
             {sessionRunning && (
-              <Pressable style={[st.primary, { marginTop: space[3] }]} onPress={finish}>
-                <Text style={st.primaryText}>Finish workout</Text>
-              </Pressable>
+              <Button size="lg" style={[st.primary, { marginTop: space[3] }]} onPress={finish}>Finish workout</Button>
             )}
           </>
         ) : (
           <>
-            <View style={st.focusBar}>
-              <Pressable style={st.back} onPress={() => setMode('plan')} accessibilityLabel="Back to full workout">
-                <Text style={st.backText}>☰</Text>
-              </Pressable>
+            <Row gap={3} style={st.focusBar}>
+              <IconButton icon="menu" label="Back to full workout" variant="filled" size={40} onPress={() => setMode('plan')} />
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={st.focusTime}>{elapsed}</Text>
-                <Text style={st.sumL}>ELAPSED</Text>
+                <Text variant="h1" style={st.tabular}>{elapsed}</Text>
+                <Text variant="overline" weight="regular">Elapsed</Text>
               </View>
               <View style={{ alignItems: 'flex-end', gap: 2 }}>
-                <Text style={st.focusStat}>{completedCount}/{totalSets} sets</Text>
-                <Text style={st.focusStat}>{totalVolume.toLocaleString()} kg</Text>
+                <Text variant="dim" color={colors.textMuted} style={st.tabular}>{completedCount}/{totalSets} sets</Text>
+                <Text variant="dim" color={colors.textMuted} style={st.tabular}>{totalVolume.toLocaleString()} kg</Text>
               </View>
               <ProgressBar pct={progressPct} />
-            </View>
+            </Row>
 
-            <View style={st.nav}>
-              <Pressable style={[st.navBtn, current === 0 && st.disabled]} disabled={current === 0} onPress={() => go(-1)}>
-                <Text style={st.navBtnText}>← Prev</Text>
-              </Pressable>
-              <Text style={st.eyebrow}>EXERCISE {current + 1} OF {exercises.length}</Text>
-              <Pressable style={[st.navBtn, current >= exercises.length - 1 && st.disabled]} disabled={current >= exercises.length - 1} onPress={() => go(1)}>
-                <Text style={st.navBtnText}>Next →</Text>
-              </Pressable>
-            </View>
+            <Row justify="space-between">
+              <Button size="sm" variant="secondary" disabled={current === 0} onPress={() => go(-1)}>← Prev</Button>
+              <Text variant="overline" weight="medium">Exercise {current + 1} of {exercises.length}</Text>
+              <Button size="sm" variant="secondary" disabled={current >= exercises.length - 1} onPress={() => go(1)}>Next →</Button>
+            </Row>
 
             {!!currentExercise && <ExerciseCard key={currentExercise.id} {...cardProps(currentExercise, current, true)} />}
 
-            <View style={st.dots}>
+            <Row gap={3} justify="center" style={{ paddingVertical: space[1] }}>
               {exercises.map((ex, ei) => (
                 <Pressable
                   key={ex.id}
@@ -294,26 +273,24 @@ export default function WorkoutScreen() {
                   style={[st.dot, exerciseDone(ex) && st.dotDone, ei === current && st.dotActive]}
                 />
               ))}
-            </View>
+            </Row>
 
             {!!currentExercise && exerciseDone(currentExercise) && current < exercises.length - 1 && (
-              <Pressable style={st.nextCta} onPress={() => go(1)}>
-                <Text style={st.nextCtaText}>Next: {exercises[current + 1].name} →</Text>
+              <Pressable style={st.nextCta} onPress={() => go(1)} accessibilityRole="button">
+                <Text variant="link">Next: {exercises[current + 1].name} →</Text>
               </Pressable>
             )}
 
-            <Pressable style={[st.primary, { marginTop: space[3] }]} onPress={finish}>
-              <Text style={st.primaryText}>Finish workout</Text>
-            </Pressable>
+            <Button size="lg" style={[st.primary, { marginTop: space[3] }]} onPress={finish}>Finish workout</Button>
 
-            <View style={st.restPref}>
-              <Text style={st.eyebrow}>REST</Text>
+            <Row justify="center">
+              <Text variant="overline" weight="medium">Rest</Text>
               {REST_OPTIONS.map(o => (
-                <Pressable key={o} style={[st.restOpt, restSeconds === o && st.restOptOn]} onPress={() => setRestSeconds(o)}>
-                  <Text style={[st.restOptText, restSeconds === o && { color: colors.secondary }]}>{o >= 60 ? `${o / 60}m` : `${o}s`}</Text>
+                <Pressable key={o} style={[st.restOpt, restSeconds === o && st.restOptOn]} onPress={() => setRestSeconds(o)} accessibilityRole="button" accessibilityState={{ selected: restSeconds === o }}>
+                  <Text variant="dim" weight="semibold" color={restSeconds === o ? colors.secondary : colors.textMuted}>{o >= 60 ? `${o / 60}m` : `${o}s`}</Text>
                 </Pressable>
               ))}
-            </View>
+            </Row>
           </>
         )}
       </Screen>
@@ -323,21 +300,22 @@ export default function WorkoutScreen() {
         <View style={[st.rest, { bottom: floatBottom }]}>
           <Text style={{ fontSize: 20 }}>⏱</Text>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={st.restTime}>{rest.formattedTime}</Text>
-            <Text style={st.restLbl}>{rest.timeRemaining === 0 ? 'Rest over — go' : 'Rest'}</Text>
+            <Text variant="h2" color={colors.secondary} style={st.tabular}>{rest.formattedTime}</Text>
+            <Text variant="dim" color={colors.textMuted}>{rest.timeRemaining === 0 ? 'Rest over — go' : 'Rest'}</Text>
           </View>
-          <View style={st.restActions}>
+          <Row gap={1} wrap justify="flex-end">
             <RestBtn label="−30s" onPress={() => addRest(-30)} />
             <RestBtn label="+30s" onPress={() => addRest(30)} />
             <RestBtn label={rest.isActive ? 'Pause' : 'Resume'} onPress={rest.toggle} />
             <RestBtn label="Skip" skip onPress={dismissRest} />
-          </View>
+          </Row>
         </View>
       )}
 
+      {/* ponytail: own toast instead of <Toast> — it must float above the rest bar (Toast has a fixed bottom). */}
       {!!toast && (
         <View style={[st.toast, { bottom: floatBottom + (restOpen ? 90 : 0) }]} pointerEvents="none">
-          <Text style={st.toastText}>{toast}</Text>
+          <Text variant="small" weight="semibold" color={colors.bg}>{toast}</Text>
         </View>
       )}
 
@@ -347,47 +325,54 @@ export default function WorkoutScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setPickerOpen(false)} accessibilityLabel="Close" />
           <View style={[st.sheet, { paddingBottom: insets.bottom + space[6] }]}>
             <View style={st.handle} />
-            <View style={st.pickerHead}>
+            <Row gap={3} justify="space-between" align="flex-start">
               <View>
-                <Text style={st.eyebrow}>TEMPLATES</Text>
-                <Text style={st.pickerTitle}>Use a weekly plan</Text>
+                <Text variant="overline" weight="medium">Templates</Text>
+                <Text variant="h2" style={{ marginTop: 2 }}>Use a weekly plan</Text>
               </View>
-              <Pressable style={st.close} onPress={() => setPickerOpen(false)} accessibilityLabel="Close">
-                <Text style={{ color: colors.text, fontSize: fs.lg }}>×</Text>
-              </Pressable>
-            </View>
-            <Text style={st.hint}>Tap a day to append its exercises. "Replace" clears your current list first.</Text>
+              <IconButton icon="close" label="Close" variant="filled" size={32} onPress={() => setPickerOpen(false)} />
+            </Row>
+            <Text variant="muted" style={st.hint}>Tap a day to append its exercises. "Replace" clears your current list first.</Text>
             <ScrollView contentContainerStyle={{ gap: space[2] }}>
               {WEEKDAYS.map(d => {
                 const tpl = weeklyTemplates[d.id]
                 return (
-                  <View key={d.id} style={st.tpl}>
-                    <Text style={st.tplDay}>{d.label.toUpperCase()}</Text>
-                    {tpl ? <SportIcon sport={tpl.sport} size="sm" /> : <Text style={st.tplRest}>—</Text>}
+                  <Row key={d.id} gap={3} style={st.tpl}>
+                    <Text variant="overline" weight="bold" align="center" style={{ width: 40 }}>{d.label}</Text>
+                    {tpl ? <SportIcon sport={tpl.sport} size="sm" /> : <Text color={colors.textDim} align="center" style={{ width: 28 }}>—</Text>}
                     <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-                      <Text style={st.tplName}>{tpl?.title || 'Rest day'}</Text>
-                      {!!tpl && <Text style={st.tplMeta}>{tpl.exercises.length} exercises · {tpl.durationMin} min</Text>}
+                      <Text variant="small" weight="semibold">{tpl?.title || 'Rest day'}</Text>
+                      {!!tpl && <Text variant="dim">{tpl.exercises.length} exercises · {tpl.durationMin} min</Text>}
                     </View>
                     {!!tpl && (
                       <View style={{ gap: space[1] }}>
-                        <Pressable style={st.tplBtn} onPress={() => loadTemplate(d.id, true)}>
-                          <Text style={st.tplBtnText}>Replace</Text>
+                        <Pressable style={st.tplBtn} onPress={() => loadTemplate(d.id, true)} accessibilityRole="button">
+                          <Text variant="dim" weight="semibold" color={colors.textMuted}>Replace</Text>
                         </Pressable>
-                        <Pressable style={[st.tplBtn, st.tplBtnPrimary]} onPress={() => loadTemplate(d.id)}>
-                          <Text style={[st.tplBtnText, { color: colors.accentInk }]}>Use</Text>
+                        <Pressable style={[st.tplBtn, st.tplBtnPrimary]} onPress={() => loadTemplate(d.id)} accessibilityRole="button">
+                          <Text variant="dim" weight="semibold" color={colors.accentInk}>Use</Text>
                         </Pressable>
                       </View>
                     )}
-                  </View>
+                  </Row>
                 )
               })}
             </ScrollView>
-            <Pressable style={st.manage} onPress={() => { setPickerOpen(false); router.push('/templates') }}>
-              <Text style={st.manageText}>Edit weekly templates →</Text>
+            <Pressable style={st.manage} onPress={() => { setPickerOpen(false); router.push('/templates') }} accessibilityRole="button">
+              <Text variant="muted">Edit weekly templates →</Text>
             </Pressable>
           </View>
         </View>
       </Modal>
+    </View>
+  )
+}
+
+function SumItem({ label, children }) {
+  return (
+    <View style={{ flex: 1, gap: 2 }}>
+      <Text variant="h2" style={st.tabular}>{children}</Text>
+      <Text variant="overline" weight="regular">{label}</Text>
     </View>
   )
 }
@@ -402,78 +387,44 @@ function ProgressBar({ pct }) {
 
 function RestBtn({ label, onPress, skip }) {
   return (
-    <Pressable style={[st.restBtn, skip && { borderColor: colors.borderStrong }]} onPress={onPress}>
-      <Text style={[st.restBtnText, skip && { color: colors.textMuted }]}>{label}</Text>
+    <Pressable style={[st.restBtn, skip && { borderColor: colors.borderStrong }]} onPress={onPress} accessibilityRole="button">
+      <Text variant="dim" weight="semibold" color={skip ? colors.textMuted : colors.secondary}>{label}</Text>
     </Pressable>
   )
 }
 
 const st = StyleSheet.create({
-  head: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
-  back: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  backText: { color: colors.text, fontSize: 20 },
-  eyebrow: { color: colors.textDim, fontSize: fs.xs, fontWeight: fw.medium, letterSpacing: 0.7, textTransform: 'uppercase' },
-  title: { color: colors.text, fontSize: fs.xxl, fontWeight: fw.bold, letterSpacing: -0.5 },
   // ponytail: icon-only header buttons (old view hid the labels under 480px anyway)
   iconBtn: { paddingVertical: space[2], paddingHorizontal: space[3], backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill },
-  iconBtnText: { color: colors.text, fontSize: fs.md },
+  tabular: { fontVariant: ['tabular-nums'] },
 
   summary: { flexDirection: 'row', alignItems: 'center', gap: space[4], overflow: 'hidden' },
-  sumItem: { flex: 1, gap: 2 },
-  sumV: { color: colors.text, fontSize: fs.xl, fontWeight: fw.bold, fontVariant: ['tabular-nums'] },
-  sumL: { color: colors.textDim, fontSize: fs.xs, letterSpacing: 0.7 },
   bar: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 3, backgroundColor: colors.surface2 },
   barFill: { height: '100%', backgroundColor: colors.accent },
 
-  primary: { padding: space[4], backgroundColor: colors.accent, borderRadius: radius.md, alignItems: 'center' },
-  primaryText: { color: colors.accentInk, fontSize: fs.md, fontWeight: fw.bold },
+  primary: { padding: space[4], borderRadius: radius.md },
   addExercise: { backgroundColor: colors.bgElevated, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.borderStrong, padding: space[4], borderRadius: radius.lg, alignItems: 'center' },
-  addExerciseText: { color: colors.textMuted, fontWeight: fw.semibold, fontSize: fs.md },
 
-  focusBar: { flexDirection: 'row', alignItems: 'center', gap: space[3], backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, paddingVertical: space[3], paddingHorizontal: space[4], overflow: 'hidden' },
-  focusTime: { color: colors.text, fontSize: fs.xxl, fontWeight: fw.bold, fontVariant: ['tabular-nums'] },
-  focusStat: { color: colors.textMuted, fontSize: fs.xs, fontVariant: ['tabular-nums'] },
-  nav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[2] },
-  navBtn: { paddingVertical: space[2], paddingHorizontal: space[4], backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill },
-  navBtnText: { color: colors.text, fontSize: fs.sm, fontWeight: fw.semibold },
-  disabled: { opacity: 0.35 },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: space[3], paddingVertical: space[1] },
+  focusBar: { backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, paddingVertical: space[3], paddingHorizontal: space[4], overflow: 'hidden' },
   dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border },
   dotDone: { backgroundColor: colors.accent, borderColor: colors.accent },
   dotActive: { transform: [{ scale: 1.5 }], borderColor: colors.text },
   nextCta: { paddingVertical: space[3], paddingHorizontal: space[4], backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accent, borderRadius: radius.md, alignItems: 'center' },
-  nextCtaText: { color: colors.accent, fontSize: fs.sm, fontWeight: fw.semibold },
 
-  restPref: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[2] },
   restOpt: { paddingVertical: 3, paddingHorizontal: space[3], borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill },
   restOptOn: { backgroundColor: colors.secondarySoft, borderColor: colors.secondary },
-  restOptText: { color: colors.textMuted, fontSize: fs.xs, fontWeight: fw.semibold },
 
   rest: { position: 'absolute', left: space[4], right: space[4], maxWidth: 576, alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[3], backgroundColor: '#1c2535', borderWidth: 1, borderColor: colors.secondary, borderRadius: radius.lg, paddingVertical: space[3], paddingHorizontal: space[4], shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 16, elevation: 8 },
-  restTime: { color: colors.secondary, fontSize: fs.xl, fontWeight: fw.bold, fontVariant: ['tabular-nums'] },
-  restLbl: { color: colors.textMuted, fontSize: fs.xs },
-  restActions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[1], justifyContent: 'flex-end' },
   restBtn: { paddingVertical: space[1], paddingHorizontal: space[3], borderWidth: 1, borderColor: colors.secondary, borderRadius: radius.pill },
-  restBtnText: { color: colors.secondary, fontSize: fs.xs, fontWeight: fw.semibold },
 
   toast: { position: 'absolute', alignSelf: 'center', backgroundColor: colors.text, paddingVertical: space[3], paddingHorizontal: space[5], borderRadius: radius.pill },
-  toastText: { color: colors.bg, fontWeight: fw.semibold, fontSize: fs.sm },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end', alignItems: 'center' },
   sheet: { width: '100%', maxWidth: 576, maxHeight: '88%', backgroundColor: colors.bgElevated, borderTopWidth: 1, borderColor: colors.border, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingTop: space[4], paddingHorizontal: space[5], gap: space[3] },
   handle: { width: 40, height: 4, backgroundColor: colors.borderStrong, borderRadius: radius.pill, alignSelf: 'center', marginBottom: space[2] },
-  pickerHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: space[3] },
-  pickerTitle: { color: colors.text, fontSize: fs.xl, fontWeight: fw.bold, marginTop: 2 },
-  close: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface2, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  hint: { color: colors.textMuted, fontSize: fs.sm, backgroundColor: colors.surface, paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.md, overflow: 'hidden' },
-  tpl: { flexDirection: 'row', alignItems: 'center', gap: space[3], backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: space[3] },
-  tplDay: { width: 40, color: colors.textDim, fontSize: fs.xs, fontWeight: fw.bold, letterSpacing: 0.7, textAlign: 'center' },
-  tplRest: { width: 28, textAlign: 'center', color: colors.textDim },
-  tplName: { color: colors.text, fontWeight: fw.semibold, fontSize: fs.sm },
-  tplMeta: { color: colors.textDim, fontSize: fs.xs },
+  hint: { backgroundColor: colors.surface, paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.md, overflow: 'hidden' },
+  tpl: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: space[3] },
   tplBtn: { borderWidth: 1, borderColor: colors.border, paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: radius.pill, alignItems: 'center' },
   tplBtnPrimary: { backgroundColor: colors.accent, borderColor: colors.accent },
-  tplBtnText: { color: colors.textMuted, fontSize: fs.xs, fontWeight: fw.semibold },
   manage: { marginTop: space[2], padding: space[3], borderWidth: 1, borderStyle: 'dashed', borderColor: colors.borderStrong, borderRadius: radius.md, alignItems: 'center' },
-  manageText: { color: colors.textMuted, fontSize: fs.sm },
 })

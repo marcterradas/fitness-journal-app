@@ -1,9 +1,12 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
-import { Image, Modal, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Image, Modal, Pressable, Share, StyleSheet, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Icon } from '@/ui/components/ui'
+import Icon from '../atoms/Icon'
+import IconButton from '../atoms/IconButton'
+import Row from '../atoms/Row'
+import Text from '../atoms/Text'
 import { step } from '@/domain/storyNav'
-import { colors, fs, fw, radius, space } from '@/ui/theme'
+import { colors, fs, radius, space } from '@/ui/theme'
 
 const DURATION = 5000
 const TICK = 50
@@ -88,25 +91,25 @@ export default function StoryViewer({ stories, startIndex = 0, onClose }) {
             ))}
           </View>
 
-          <View style={st.head}>
+          <Row style={st.head}>
             <Image source={{ uri: story.user.avatar }} style={st.avatar} />
-            <Text style={st.name}>{story.user.name}</Text>
-            <Text style={st.when}>{item.when}</Text>
-            <Pressable onPress={onClose} accessibilityLabel="Close" hitSlop={12}>
-              <Text style={st.close}>✕</Text>
-            </Pressable>
-          </View>
+            <Text variant="small" weight="semibold" color="#fff" style={st.shadow}>{story.user.name}</Text>
+            <Text variant="dim" color="rgba(255,255,255,0.7)" style={[st.shadow, { flex: 1 }]}>{item.when}</Text>
+            <IconButton label="Close" size={32} onPress={onClose}>
+              <Icon name="close" size={24} color="#fff" />
+            </IconButton>
+          </Row>
 
           <Pressable style={[st.arrow, { left: space[3] }]} onPress={() => go(-1)} accessibilityLabel="Previous">
-            <Text style={st.arrowText}>‹</Text>
+            <Text color="#fff" style={st.arrowText}>‹</Text>
           </Pressable>
           <Pressable style={[st.arrow, { right: space[3] }]} onPress={() => go(1)} accessibilityLabel="Next">
-            <Text style={st.arrowText}>›</Text>
+            <Text color="#fff" style={st.arrowText}>›</Text>
           </Pressable>
 
           <View style={st.foot}>
-            {!!item.caption && <Text style={st.caption}>{item.caption}</Text>}
-            <View style={st.acts}>
+            {!!item.caption && <Text variant="small" color="#fff" style={st.shadow}>{item.caption}</Text>}
+            <Row>
               <TextInput
                 value={comment}
                 onChangeText={setComment}
@@ -120,13 +123,13 @@ export default function StoryViewer({ stories, startIndex = 0, onClose }) {
               />
               <Pressable style={st.actBtn} onPress={toggleLike} accessibilityLabel={item.liked ? 'Unlike' : 'Like'}>
                 <Icon name={item.liked ? 'heart' : 'heart-outline'} size={22} color={item.liked ? colors.mood : '#fff'} />
-                <Text style={st.count}>{item.likes}</Text>
+                <Text variant="dim" color="#fff">{item.likes}</Text>
               </Pressable>
               <Pressable style={st.actBtn} onPress={share} accessibilityLabel="Share">
                 <Icon name="send" size={22} color="#fff" />
               </Pressable>
-            </View>
-            {!!toast && <Text style={st.toast}>{toast}</Text>}
+            </Row>
+            {!!toast && <Text variant="dim" color="rgba(255,255,255,0.85)" align="center">{toast}</Text>}
           </View>
         </View>
       </SafeAreaView>
@@ -134,7 +137,6 @@ export default function StoryViewer({ stories, startIndex = 0, onClose }) {
   )
 }
 
-const shadow = { textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }
 const st = StyleSheet.create({
   viewer: { flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
   stage: { flex: 1, width: '100%', maxWidth: 416, maxHeight: 736, backgroundColor: colors.bg, overflow: 'hidden', borderRadius: radius.lg },
@@ -142,25 +144,19 @@ const st = StyleSheet.create({
   bars: { position: 'absolute', top: space[3], left: space[3], right: space[3], flexDirection: 'row', gap: 3 },
   bar: { flex: 1, height: 2, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.3)', overflow: 'hidden' },
   barFill: { height: '100%', backgroundColor: '#fff' },
-  head: { position: 'absolute', top: space[3] + 12, left: space[3], right: space[3], flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  head: { position: 'absolute', top: space[3] + 12, left: space[3], right: space[3] },
+  shadow: { textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
   avatar: { width: 32, height: 32, borderRadius: 16 },
-  name: { color: '#fff', fontSize: fs.sm, fontWeight: fw.semibold, ...shadow },
-  when: { flex: 1, color: 'rgba(255,255,255,0.7)', fontSize: fs.xs, ...shadow },
-  close: { color: '#fff', fontSize: fs.xl, opacity: 0.85, ...shadow },
   arrow: {
     position: 'absolute', top: '50%', marginTop: -16, width: 32, height: 32, borderRadius: 16,
     backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center',
   },
-  arrowText: { color: '#fff', fontSize: 24, lineHeight: 26, marginTop: -3 },
+  arrowText: { fontSize: 24, lineHeight: 26, marginTop: -3 },
   // ponytail: flat dark scrim instead of the transparent→black gradient.
   foot: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: space[4], gap: space[3], backgroundColor: 'rgba(0,0,0,0.55)' },
-  caption: { color: '#fff', fontSize: fs.sm, ...shadow },
-  acts: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
   input: {
     flex: 1, minWidth: 0, paddingVertical: space[2], paddingHorizontal: space[4], color: '#fff', fontSize: fs.sm,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)', borderRadius: radius.pill,
   },
   actBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, padding: space[1] },
-  count: { color: '#fff', fontSize: fs.xs },
-  toast: { color: 'rgba(255,255,255,0.85)', fontSize: fs.xs, textAlign: 'center' },
 })

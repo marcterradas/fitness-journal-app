@@ -1,11 +1,6 @@
 import { useState } from 'react'
-import { Pressable, Text, View } from 'react-native'
-import { AppHeader, Screen, Tabs, Toast, s as ui } from '@/ui/components/ui'
-import LogTab from '@/ui/components/journal/LogTab'
-import ProgressTab from '@/ui/components/journal/ProgressTab'
-import SavedTab from '@/ui/components/journal/SavedTab'
-import NewEntrySheet from '@/ui/components/journal/NewEntrySheet'
-import { js } from '@/ui/components/journal/styles'
+import { View } from 'react-native'
+import { AppHeader, Button, LogTab, NewEntrySheet, ProgressTab, Row, SavedTab, Screen, Tabs, Text, Toast } from '@/ui/components'
 import { useLoad } from '@/ui/hooks/useLoad'
 import { useToast } from '@/ui/hooks/useToast'
 import { api } from '@/api'
@@ -54,15 +49,13 @@ export default function JournalScreen() {
     <View style={{ flex: 1 }}>
       <Screen>
         <AppHeader />
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: space[4], flexWrap: 'wrap' }}>
+        <Row gap={4} align="flex-end" justify="space-between" wrap>
           <View style={{ flexShrink: 1 }}>
-            <Text style={ui.h1}>Training journal</Text>
-            <Text style={[ui.muted, { marginTop: space[1] }]}>Your story, one session at a time.</Text>
+            <Text variant="h1">Training journal</Text>
+            <Text variant="muted" style={{ marginTop: space[1] }}>Your story, one session at a time.</Text>
           </View>
-          <Pressable style={js.primary} onPress={() => openSheet()}>
-            <Text style={js.primaryText}>+ New entry</Text>
-          </Pressable>
-        </View>
+          <Button onPress={() => openSheet()}>+ New entry</Button>
+        </Row>
 
         <Tabs
           value={tab}
